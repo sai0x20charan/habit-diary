@@ -1,11 +1,13 @@
 package com.charan.habitdiary.presentation.media_viewer
 
+import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,13 +35,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util.getStringForTime
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import androidx.media3.ui.compose.PlayerSurface
+import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import androidx.media3.ui.compose.SurfaceType
 import androidx.media3.ui.compose.material3.buttons.MuteButton
 import androidx.media3.ui.compose.material3.buttons.PlayPauseButton
 import androidx.media3.ui.compose.state.rememberMuteButtonState
@@ -69,10 +77,17 @@ fun VideoViewer(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        PlayerSurface(
-            player = player,
-            modifier = Modifier.fillMaxSize()
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { context ->
+                PlayerView(context).apply {
+                    this.player = player
+                    this.useController = false
+                    this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                }
+            }
         )
+
         if(showControls) {
             Column(
                 modifier = Modifier
@@ -148,7 +163,8 @@ fun MiniVideoPlayer(
 ) {
     val context = LocalContext.current
     val player = remember {
-        ExoPlayer.Builder(context).build().apply {
+        ExoPlayer.Builder(context)
+            .build().apply {
             val mediaItem = MediaItem.fromUri(videoPath.toUri())
             setMediaItem(mediaItem)
             prepare()
@@ -166,15 +182,17 @@ fun MiniVideoPlayer(
         }
     }
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
     ) {
 
         PlayerSurface(
             player = player,
-            modifier = Modifier.fillMaxSize().clickable(true){
+            modifier = Modifier
+                .fillMaxSize().clickable(true){
                 onVideoClick()
+                                              },
+            surfaceType = SURFACE_TYPE_TEXTURE_VIEW
 
-            }
         )
 
         FilledTonalIconButton(
