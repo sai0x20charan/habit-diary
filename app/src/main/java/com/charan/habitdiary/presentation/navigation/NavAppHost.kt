@@ -95,7 +95,9 @@ fun RootNavigation(
                             backStack.add(Destinations.HabitStatsScreeNav(it))
                         },
                         date = key.date,
-                        openCameraOnLaunch = key.openCameraOnLaunch
+                        openImageCaptureOnLaunch = key.openCaptureImageOnLaunch,
+                        openVideoRecordingOnLaunch = key.openCaptureVideoOnLaunch
+
                     )
                 }
                 is Destinations.LibrariesScreenNav -> NavEntry(key){

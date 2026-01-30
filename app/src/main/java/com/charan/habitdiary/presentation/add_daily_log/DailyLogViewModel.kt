@@ -33,9 +33,10 @@ import kotlinx.datetime.LocalTime
 
 @HiltViewModel(assistedFactory = DailyLogViewModel.Factory::class)
 class DailyLogViewModel @AssistedInject constructor(
-    @Assisted val logId : Long?,
-    @Assisted val date : LocalDate?,
-    @Assisted val openCameraOnLaunch : Boolean?,
+    @Assisted("logId") val logId: Long?,
+    @Assisted("date") val date: LocalDate?,
+    @Assisted("openImageCapture") val openImageCaptureOnLaunch: Boolean?,
+    @Assisted("openVideoCapture") val openVideoRecordingOnLaunch: Boolean?,
     private val habitLocalRepository: HabitLocalRepository,
     private val fileRepository: FileRepository,
     private val permissionManager: PermissionManager,
@@ -44,8 +45,14 @@ class DailyLogViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(logId: Long?, date : LocalDate?, openCameraOnLaunch : Boolean?) : DailyLogViewModel
+        fun create(
+            @Assisted("logId") logId: Long?,
+            @Assisted("date") date: LocalDate?,
+            @Assisted("openImageCapture") openImageCaptureOnLaunch: Boolean?,
+            @Assisted("openVideoCapture") openVideoRecordingOnLaunch: Boolean?
+        ): DailyLogViewModel
     }
+
 
 
     private val _state = MutableStateFlow(DailyLogState())
@@ -58,8 +65,11 @@ class DailyLogViewModel @AssistedInject constructor(
         initializeLog(logId)
         observeDateTimeChanges()
         observeHourFormat()
-        if(openCameraOnLaunch == true){
+        if(openImageCaptureOnLaunch == true){
             handleTakePhoto()
+        }
+        if(openVideoRecordingOnLaunch == true){
+            handleTakeVideo()
         }
     }
 

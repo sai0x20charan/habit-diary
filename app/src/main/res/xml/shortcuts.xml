@@ -37,7 +37,7 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetClass="com.charan.habitdiary.MainActivity"
-            android:data="habitdiary://app/add-daily-log?openCameraOnLaunch=true" />
+            android:data="habitdiary://app/add-daily-log?openImageCaptureOnOpen=true" />
         <categories android:name="android.shortcut.conversation" />
         <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
     </shortcut>

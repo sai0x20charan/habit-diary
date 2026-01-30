@@ -65,13 +65,14 @@ fun AddDailyLogScreen(
     onNavigateBack : () -> Unit,
     logId : Long? = null,
     date : LocalDate?= null,
-    openCameraOnLaunch : Boolean = false,
+    openImageCaptureOnLaunch : Boolean = false,
+    openVideoRecordingOnLaunch : Boolean = false,
     onHabitOpen : (habitId : Long) -> Unit,
     onImageOpen : (allImages : List<String>, currentImage : String) -> Unit,
 ) {
     val viewModel = hiltViewModel<DailyLogViewModel, DailyLogViewModel.Factory>(
         creationCallback = { factory ->
-            factory.create(logId,date,openCameraOnLaunch)
+            factory.create(logId,date, openImageCaptureOnLaunch, openVideoRecordingOnLaunch)
         }
     )
     val context = LocalContext.current

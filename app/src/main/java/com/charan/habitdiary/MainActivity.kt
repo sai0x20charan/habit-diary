@@ -83,29 +83,44 @@ class MainActivity : ComponentActivity() {
 }
 
 object DeepLinkHandler {
-    private val ADDHABIT_URI = "add-habit"
-    private val DAILYLOG_URI = "add-daily-log"
+    val BASE_URL = "habitdiary://app/"
+    val ADDHABIT_URI = "add-habit"
+    val DAILYLOG_URI = "add-daily-log"
 
     val HABIT_STATS_URI = "habit-stats"
+    val CAPTURE_IMAGE_QUERY = "openImageCaptureOnOpen"
+    val CAPTURE_VIDEO_QUERY = "openVideoCaptureOnOpen"
 
     fun resolve(uri: Uri): List<NavKey>? {
         val pathSegments = uri.pathSegments
 
         return when {
-            pathSegments.firstOrNull() == ADDHABIT_URI-> {
+            pathSegments.firstOrNull() == ADDHABIT_URI -> {
                 val habitId = uri.getQueryParameter("id")?.toLongOrNull()
                 listOf(Destinations.BottomBarNav, Destinations.AddHabit(habitId))
             }
+
             pathSegments.firstOrNull() == DAILYLOG_URI -> {
                 val logId = uri.getQueryParameter("logId")?.toLongOrNull()
-                val triggerCamera =
-                    uri.getQueryParameter("openCameraOnLaunch")?.toBoolean() ?: false
-                listOf(Destinations.BottomBarNav, Destinations.AddDailyLog(logId,null, triggerCamera))
+                val triggerImageCapture =
+                    uri.getQueryParameter("openImageCaptureOnOpen")?.toBoolean() ?: false
+                val triggerVideoCapture =
+                    uri.getQueryParameter("openVideoCaptureOnOpen")?.toBoolean() ?: false
+                listOf(
+                    Destinations.BottomBarNav,
+                    Destinations.AddDailyLog(
+                        logId,
+                        null,
+                        triggerImageCapture,
+                        triggerVideoCapture)
+                )
             }
+
             pathSegments.firstOrNull() == HABIT_STATS_URI -> {
                 val habitId = uri.getQueryParameter("id")?.toLongOrNull() ?: return null
                 listOf(Destinations.BottomBarNav, Destinations.HabitStatsScreeNav(habitId))
             }
+
             else -> null
         }
     }

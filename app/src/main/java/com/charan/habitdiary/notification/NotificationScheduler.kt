@@ -85,7 +85,7 @@ class NotificationScheduler(
             .toInstant(TimeZone.currentSystemDefault())
             .toEpochMilliseconds()
 
-        Log.d("TAG", "scheduleReminder at weekday ${scheduledTime.dayOfWeek} time $epochMillis")
+        println("scheduleReminder at weekday ${scheduledTime.dayOfWeek} time $epochMillis")
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("habitId", habitId)

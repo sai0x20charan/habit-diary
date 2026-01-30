@@ -52,7 +52,7 @@ class NotificationHelper(private val context: Context) {
         )
         val openHabitStatScreen = Intent(
             Intent.ACTION_VIEW,
-            "habitdiary://app/${DeepLinkHandler.HABIT_STATS_URI}?id=$habitId".toUri()
+            "${DeepLinkHandler.BASE_URL}${DeepLinkHandler.HABIT_STATS_URI}?id=$habitId".toUri()
         ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("habitId", habitId)
