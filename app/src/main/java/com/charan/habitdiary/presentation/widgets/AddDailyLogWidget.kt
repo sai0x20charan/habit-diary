@@ -72,7 +72,6 @@ class AddDailyLogWidgetReceiver : GlanceAppWidgetReceiver() {
 @Composable
 private fun AddDailyLogWidgetContent() {
     val size = LocalSize.current
-    Log.d("TAG", "AddDailyLogWidgetContent: updating")
 
     val isHeightOneCell = size.height < 140.dp
     val isWidthTwoCells = size.width <= 180.dp
