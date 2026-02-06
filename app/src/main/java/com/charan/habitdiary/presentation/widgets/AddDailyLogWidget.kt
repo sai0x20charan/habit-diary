@@ -15,6 +15,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
+import androidx.glance.action.Action
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -197,7 +198,7 @@ private fun AddDailyLogWidgetContent() {
             AdaptiveButton(
                 modifier = GlanceModifier.defaultWeight(),
                 text = "Photo",
-                onClickAction = { actionStartActivity(captureImage) },
+                onClickAction = actionStartActivity(captureImage) ,
                 isWidthTwoCells = isWidthTwoCells,
                 isHeightOneCell = isHeightOneCell,
                 icon = ImageProvider(R.drawable.rounded_add_a_photo_24)
@@ -208,7 +209,7 @@ private fun AddDailyLogWidgetContent() {
             AdaptiveButton(
                 modifier = GlanceModifier.defaultWeight(),
                 text = "Video",
-                onClickAction = { actionStartActivity(captureVideo) },
+                onClickAction =  actionStartActivity(captureVideo) ,
                 isWidthTwoCells = isWidthTwoCells,
                 isHeightOneCell = isHeightOneCell,
                 icon = ImageProvider(R.drawable.outline_video_call_24)
@@ -221,7 +222,7 @@ private fun AddDailyLogWidgetContent() {
 private fun AdaptiveButton(
     modifier: GlanceModifier,
     text: String,
-    onClickAction: () -> Unit,
+    onClickAction: Action,
     isWidthTwoCells: Boolean,
     isHeightOneCell: Boolean,
     icon: ImageProvider
