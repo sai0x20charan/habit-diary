@@ -61,7 +61,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".presentation.widgets.AddDailyLogWidgetReceiver"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/capture_moment">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

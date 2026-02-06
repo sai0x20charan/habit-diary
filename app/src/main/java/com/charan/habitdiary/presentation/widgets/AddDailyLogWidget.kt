@@ -3,15 +3,11 @@ package com.charan.habitdiary.presentation.widgets
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AddAPhoto
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.glance.Button
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -26,8 +22,6 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
-import androidx.glance.appwidget.components.Scaffold
-import androidx.glance.appwidget.components.SquareIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -57,7 +51,7 @@ class AddDailyLogWidget : GlanceAppWidget() {
             DpSize(200.dp, 100.dp),
             DpSize(200.dp, 200.dp),
             DpSize(250.dp, 250.dp),
-            DpSize(100.dp,200.dp)
+            DpSize(100.dp, 200.dp)
         )
     )
 
@@ -74,10 +68,10 @@ class AddDailyLogWidget : GlanceAppWidget() {
 class AddDailyLogWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = AddDailyLogWidget()
 }
+
 @Composable
 private fun AddDailyLogWidgetContent() {
     val size = LocalSize.current
-    Log.d("TAG", "Widget size: $size")
 
     val isHeightOneCell = size.height < 140.dp
     val isWidthTwoCells = size.width <= 180.dp
@@ -86,10 +80,12 @@ private fun AddDailyLogWidgetContent() {
         Intent.ACTION_VIEW,
         "${DeepLinkHandler.BASE_URL}${DeepLinkHandler.DAILYLOG_URI}".toUri()
     )
+
     val captureImage = Intent(
         Intent.ACTION_VIEW,
         "${DeepLinkHandler.BASE_URL}${DeepLinkHandler.DAILYLOG_URI}?${DeepLinkHandler.CAPTURE_IMAGE_QUERY}=true".toUri()
     )
+
     val captureVideo = Intent(
         Intent.ACTION_VIEW,
         "${DeepLinkHandler.BASE_URL}${DeepLinkHandler.DAILYLOG_URI}?${DeepLinkHandler.CAPTURE_VIDEO_QUERY}=true".toUri()
@@ -101,10 +97,10 @@ private fun AddDailyLogWidgetContent() {
             .appWidgetBackground()
             .background(GlanceTheme.colors.background)
             .then(
-                if(!isHeightOneCell){
+                if (!isHeightOneCell) {
                     GlanceModifier.padding(16.dp)
                 } else {
-                    GlanceModifier.padding(4.dp)
+                    GlanceModifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 }
             ),
         verticalAlignment = Alignment.Top,
@@ -125,6 +121,7 @@ private fun AddDailyLogWidgetContent() {
             }
 
             if (!isWidthTwoCells && !isHeightOneCell) {
+                Spacer(GlanceModifier.height(4.dp))
                 Text(
                     text = "How are you feeling?",
                     style = TextStyle(
@@ -136,7 +133,11 @@ private fun AddDailyLogWidgetContent() {
             }
         }
 
-        Spacer(GlanceModifier.defaultWeight())
+        if (!isHeightOneCell) {
+            Spacer(GlanceModifier.defaultWeight())
+        } else {
+            Spacer(GlanceModifier.height(6.dp))
+        }
 
         Row(
             modifier = GlanceModifier
@@ -151,30 +152,30 @@ private fun AddDailyLogWidgetContent() {
                     .background(GlanceTheme.colors.surface)
                     .cornerRadius(24.dp)
                     .clickable(actionStartActivity(openDailyLog))
-                    .padding(16.dp),
+                    .padding(if (isHeightOneCell) 10.dp else 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalAlignment = if (!isWidthTwoCells)
-                    Alignment.CenterHorizontally
-                else
-                    Alignment.Start
+                horizontalAlignment =
+                    if (isHeightOneCell) Alignment.CenterHorizontally
+                    else if (!isWidthTwoCells) Alignment.CenterHorizontally
+                    else Alignment.Start
             ) {
 
-
-                    Text(
-                        text = "Tap to write entry...",
-                        modifier = GlanceModifier.defaultWeight(),
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurface,
-                            fontSize = 14.sp
-                        ),
-                        maxLines = 1
-                    )
-
+                Text(
+                    text = "Tap to write entry...",
+                    modifier = GlanceModifier.defaultWeight(),
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSurface,
+                        fontSize = if (isHeightOneCell) 12.sp else 14.sp
+                    ),
+                    maxLines = 1
+                )
 
                 Image(
                     provider = ImageProvider(R.drawable.outline_ink_pen_24),
-                    contentDescription = "Edit entry",
-                    modifier = GlanceModifier.size(20.dp),
+                    contentDescription = null,
+                    modifier = GlanceModifier.size(
+                        if (isHeightOneCell) 18.dp else 20.dp
+                    ),
                     colorFilter = ColorFilter.tint(
                         GlanceTheme.colors.onPrimaryContainer
                     )
@@ -182,81 +183,90 @@ private fun AddDailyLogWidgetContent() {
             }
         }
 
-
-        Spacer(GlanceModifier.defaultWeight())
+        if (!isHeightOneCell) {
+            Spacer(GlanceModifier.defaultWeight())
+        } else {
+            Spacer(GlanceModifier.height(6.dp))
+        }
 
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Box(
-                modifier = GlanceModifier
-                    .defaultWeight()
-                    .height(48.dp)
-                    .background(GlanceTheme.colors.secondaryContainer)
-                    .cornerRadius(24.dp)
-                    .clickable(actionStartActivity(captureImage)),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        provider = ImageProvider(R.drawable.rounded_add_a_photo_24),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(18.dp),
-                        colorFilter = ColorFilter.tint(
-                            GlanceTheme.colors.onSecondaryContainer
-                        )
-                    )
-
-                    if (!isWidthTwoCells) {
-                        Spacer(GlanceModifier.width(8.dp))
-                        Text(
-                            text = "Photo",
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSecondaryContainer,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp
-                            )
-                        )
-                    }
-                }
-            }
+            AdaptiveButton(
+                modifier = GlanceModifier.defaultWeight(),
+                text = "Photo",
+                onClickAction = { actionStartActivity(captureImage) },
+                isWidthTwoCells = isWidthTwoCells,
+                isHeightOneCell = isHeightOneCell,
+                icon = ImageProvider(R.drawable.rounded_add_a_photo_24)
+            )
 
             Spacer(GlanceModifier.width(12.dp))
 
-            Box(
-                modifier = GlanceModifier
-                    .defaultWeight()
-                    .height(48.dp)
-                    .background(GlanceTheme.colors.secondaryContainer)
-                    .cornerRadius(24.dp)
-                    .clickable(actionStartActivity(captureVideo)),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        provider = ImageProvider(R.drawable.outline_video_call_24),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(18.dp),
-                        colorFilter = ColorFilter.tint(
-                            GlanceTheme.colors.onSecondaryContainer
-                        )
-                    )
+            AdaptiveButton(
+                modifier = GlanceModifier.defaultWeight(),
+                text = "Video",
+                onClickAction = { actionStartActivity(captureVideo) },
+                isWidthTwoCells = isWidthTwoCells,
+                isHeightOneCell = isHeightOneCell,
+                icon = ImageProvider(R.drawable.outline_video_call_24)
+            )
+        }
+    }
+}
 
-                    if (!isWidthTwoCells) {
-                        Spacer(GlanceModifier.width(8.dp))
-                        Text(
-                            text = "Video",
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSecondaryContainer,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp
-                            )
-                        )
-                    }
-                }
+@Composable
+private fun AdaptiveButton(
+    modifier: GlanceModifier,
+    text: String,
+    onClickAction: () -> Unit,
+    isWidthTwoCells: Boolean,
+    isHeightOneCell: Boolean,
+    icon: ImageProvider
+) {
+
+    val showText = !isWidthTwoCells
+    val height = when {
+        isHeightOneCell && showText -> 40.dp
+        isHeightOneCell && !showText -> 36.dp
+        isWidthTwoCells -> 40.dp
+        else -> 48.dp
+    }
+
+    val padding = if (isHeightOneCell) 6.dp else 12.dp
+
+    Box(
+        modifier = modifier
+            .height(height)
+            .background(GlanceTheme.colors.secondaryContainer)
+            .cornerRadius(height / 2)
+            .clickable(onClickAction),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                provider = icon,
+                contentDescription = null,
+                modifier = GlanceModifier.size(18.dp),
+                colorFilter = ColorFilter.tint(
+                    GlanceTheme.colors.onSecondaryContainer
+                )
+            )
+
+            if (showText) {
+                Spacer(GlanceModifier.width(8.dp))
+                Text(
+                    text = text,
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSecondaryContainer,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    )
+                )
             }
         }
     }
 }
+

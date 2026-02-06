@@ -5,5 +5,7 @@
     android:initialLayout="@layout/glance_default_loading_layout"
     android:targetCellWidth="2"
     android:targetCellHeight="1"
+    android:updatePeriodMillis="1800000"
+    android:previewImage="@drawable/widget_group"
     android:minWidth="110dp">
 </appwidget-provider>
