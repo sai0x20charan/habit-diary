@@ -2,7 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+//    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.google.hilt.android)
@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.google.firebase.crashlytics)
 
 }
+val appName = "Habit Diary"
 
 android {
     namespace = "com.charan.habitdiary"
@@ -48,24 +49,6 @@ android {
             }
         }
     }
-
-    val appName = "Habit Diary"
-    applicationVariants.all {
-        val variant = this
-        val isRelease = variant.buildType.name.equals("release", ignoreCase = true)
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .forEach { output ->
-                val outputFileName = if (isRelease) {
-                    "$appName-${variant.versionName}.apk"
-                } else {
-                    "$appName-${variant.buildType.name}-${variant.versionName}.apk"
-                }
-                output.outputFileName = outputFileName
-            }
-    }
-
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -88,26 +71,37 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    hilt {
-        enableAggregatingTask = false
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
-    room {
-        schemaDirectory("$projectDir/schemas")
-        generateKotlin = true
-    }
+
     sourceSets {
         getByName("androidTest") {
-            assets.srcDir("$projectDir/schemas")
+            assets.directories.add("$projectDir/schemas")
         }
     }
 
+}
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                val name = variant.name
+                val versionName = android.defaultConfig.versionName ?: "1.0"
+                output.outputFileName.set("$appName-$name-$versionName.apk")
+            }
+        }
+    }
+}
+hilt {
+    enableAggregatingTask = false
+}
+room {
+    schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 dependencies {
