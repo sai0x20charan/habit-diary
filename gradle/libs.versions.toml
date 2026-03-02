@@ -30,7 +30,7 @@ nav3Core = "1.0.0"
 nav3Lifecycle = "2.10.0"
 material3AdaptiveNavigationSuite = "1.4.0"
 animation = "1.9.5"
-aboutLibraries = "11.2.3"
+aboutLibraries = "13.2.1"
 accompanistSystemuicontroller = "0.36.0"
 firebaseCrashlytics = "20.0.3"
 googleGmsGoogleServices = "4.4.4"
@@ -100,7 +100,7 @@ google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 google-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 plugin-room = { id = "androidx.room", version.ref = "room" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries-plugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
+aboutlibraries-plugin = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutLibraries" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "googleFirebaseCrashlytics" }
 
