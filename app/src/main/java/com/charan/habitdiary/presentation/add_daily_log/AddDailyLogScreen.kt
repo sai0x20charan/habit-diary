@@ -1,6 +1,7 @@
 package com.charan.habitdiary.presentation.add_daily_log
 
 import android.Manifest
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -69,10 +70,11 @@ fun AddDailyLogScreen(
     openVideoRecordingOnLaunch : Boolean = false,
     onHabitOpen : (habitId : Long) -> Unit,
     onImageOpen : (allImages : List<String>, currentImage : String) -> Unit,
+    sharedMedia : List<String>? = null
 ) {
     val viewModel = hiltViewModel<DailyLogViewModel, DailyLogViewModel.Factory>(
         creationCallback = { factory ->
-            factory.create(logId,date, openImageCaptureOnLaunch, openVideoRecordingOnLaunch)
+            factory.create(logId,date, openImageCaptureOnLaunch, openVideoRecordingOnLaunch,sharedMedia)
         }
     )
     val context = LocalContext.current

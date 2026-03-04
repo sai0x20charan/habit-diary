@@ -37,6 +37,7 @@ class DailyLogViewModel @AssistedInject constructor(
     @Assisted("date") val date: LocalDate?,
     @Assisted("openImageCapture") val openImageCaptureOnLaunch: Boolean?,
     @Assisted("openVideoCapture") val openVideoRecordingOnLaunch: Boolean?,
+    @Assisted("sharedMediaItems") val sharedMediaItems : List<String>?,
     private val habitLocalRepository: HabitLocalRepository,
     private val fileRepository: FileRepository,
     private val permissionManager: PermissionManager,
@@ -49,7 +50,8 @@ class DailyLogViewModel @AssistedInject constructor(
             @Assisted("logId") logId: Long?,
             @Assisted("date") date: LocalDate?,
             @Assisted("openImageCapture") openImageCaptureOnLaunch: Boolean?,
-            @Assisted("openVideoCapture") openVideoRecordingOnLaunch: Boolean?
+            @Assisted("openVideoCapture") openVideoRecordingOnLaunch: Boolean?,
+            @Assisted("sharedMediaItems") sharedMediaItems : List<String>?
         ): DailyLogViewModel
     }
 
@@ -70,6 +72,11 @@ class DailyLogViewModel @AssistedInject constructor(
         }
         if(openVideoRecordingOnLaunch == true){
             handleTakeVideo()
+        }
+        if(!(sharedMediaItems.isNullOrEmpty())){
+            val sharedUris = sharedMediaItems.map { it.toUri() }
+            handleMediaPicked(sharedUris)
+
         }
     }
 
@@ -97,7 +104,7 @@ class DailyLogViewModel @AssistedInject constructor(
                 handleTakePhoto()
             }
             is DailyLogEvent.OnImagePick -> {
-                handleImagePicked(event.uris)
+                handleMediaPicked(event.uris)
             }
             DailyLogEvent.OnOpenSettingsForPermissions -> {
                 permissionManager.openSettingsPermissionScreen()
@@ -364,7 +371,7 @@ class DailyLogViewModel @AssistedInject constructor(
         sendEffect(DailyLogEffect.OnTakeVideo)
     }
 
-    private fun handleImagePicked(uris: List<Uri>) = viewModelScope.launch {
+    private fun handleMediaPicked(uris: List<Uri>) = viewModelScope.launch {
         setLoading(true)
 
         try {

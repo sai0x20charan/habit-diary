@@ -28,7 +28,8 @@ sealed class Destinations : NavKey {
         val id: Long?,
         val date: LocalDate?,
         val openCaptureImageOnLaunch: Boolean = false,
-        val openCaptureVideoOnLaunch: Boolean = false
+        val openCaptureVideoOnLaunch: Boolean = false,
+        val mediaList: List<String>? = null
     ) : Destinations()
 
     @Serializable

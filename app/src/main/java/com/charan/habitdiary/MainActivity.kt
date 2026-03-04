@@ -1,8 +1,10 @@
 package com.charan.habitdiary
 
+import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -24,6 +26,7 @@ import com.charan.habitdiary.ui.theme.HabitDiaryTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,9 +34,25 @@ class MainActivity : ComponentActivity() {
     private val keepScreen = mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val deepLinkStack = intent?.data?.let {
+        var deepLinkStack = intent?.data?.let {
             DeepLinkHandler.resolve(it)
         }
+        intent.getSharedMedia().apply {
+            if(this.isNotEmpty()){
+                deepLinkStack = listOf(
+                    Destinations.BottomBarNav,
+                    Destinations.AddDailyLog(
+                        id = null,
+                        date = null,
+                        openCaptureImageOnLaunch = false,
+                        openCaptureVideoOnLaunch = false,
+                        mediaList = this.map { it }
+                    )
+                )
+
+            }
+        }
+
         super.onCreate(savedInstanceState)
         installSplashScreen().setKeepOnScreenCondition {
             keepScreen.value
@@ -82,6 +101,36 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun Intent.getSharedMedia(): List<String> {
+    val result = mutableListOf<String>()
+
+    when (action) {
+
+        Intent.ACTION_SEND -> {
+
+            clipData?.let { clip ->
+                for (i in 0 until clip.itemCount) {
+                    clip.getItemAt(i).uri?.let {
+                        result.add(it.toString())
+                    }
+                }
+            }
+        }
+
+        Intent.ACTION_SEND_MULTIPLE -> {
+            clipData?.let { clip ->
+                for (i in 0 until clip.itemCount) {
+                    clip.getItemAt(i).uri?.let {
+                        result.add(it.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    return result
+}
+
 object DeepLinkHandler {
     val BASE_URL = "habitdiary://app/"
     val ADDHABIT_URI = "add-habit"
@@ -102,6 +151,7 @@ object DeepLinkHandler {
 
             pathSegments.firstOrNull() == DAILYLOG_URI -> {
                 val logId = uri.getQueryParameter("logId")?.toLongOrNull()
+                val sharedMedias = uri.getQueryParameter("sharedMedias")?.split(",") ?: emptyList()
                 val triggerImageCapture =
                     uri.getQueryParameter("openImageCaptureOnOpen")?.toBoolean() ?: false
                 val triggerVideoCapture =
@@ -112,7 +162,8 @@ object DeepLinkHandler {
                         logId,
                         null,
                         triggerImageCapture,
-                        triggerVideoCapture)
+                        triggerVideoCapture,
+                        mediaList = sharedMedias)
                 )
             }
 
