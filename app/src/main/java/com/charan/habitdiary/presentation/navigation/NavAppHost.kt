@@ -1,9 +1,11 @@
 package com.charan.habitdiary.presentation.navigation
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -21,10 +23,11 @@ import com.charan.habitdiary.presentation.settings.about_libraries.AboutLibrarie
 @Composable
 fun RootNavigation(
     onBoardingCompleted : Boolean = true,
-    deepLinkNavKey : List<NavKey>? = null
+    deepLinkNavKey : List<NavKey>? = null,
+    mediaList : List<Uri>? = null
 ) {
     val backStack = rememberNavBackStack(Destinations.BottomBarNav)
-    LaunchedEffect(deepLinkNavKey, onBoardingCompleted) {
+    LaunchedEffect(deepLinkNavKey, onBoardingCompleted, mediaList) {
         if (deepLinkNavKey != null) {
             backStack.clear()
             deepLinkNavKey.forEach { backStack.add(it) }
@@ -96,7 +99,8 @@ fun RootNavigation(
                         },
                         date = key.date,
                         openImageCaptureOnLaunch = key.openCaptureImageOnLaunch,
-                        openVideoRecordingOnLaunch = key.openCaptureVideoOnLaunch
+                        openVideoRecordingOnLaunch = key.openCaptureVideoOnLaunch,
+                        sharedMedia = key.mediaList
 
                     )
                 }
