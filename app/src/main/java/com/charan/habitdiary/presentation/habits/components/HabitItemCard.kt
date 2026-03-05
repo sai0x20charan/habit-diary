@@ -171,16 +171,16 @@ fun HabitItemCard(
                         HabitChip(
                             icon = Icons.Rounded.Notifications,
                             text = reminder,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            onColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            onColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
 
                     HabitChip(
                         icon = Icons.Rounded.Repeat,
                         text = daysText,
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        onColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        onColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
