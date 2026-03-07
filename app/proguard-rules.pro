@@ -21,6 +21,6 @@
 #-renamesourcefileattribute SourceFile
 
 # WorkManager
--keep public class * extends androidx.work.ListenableWorker {
-    public <init>();
-}
+-keep class androidx.work.** { *; }
+-keep class * extends androidx.work.InputMerger { *; }
+-keep class androidx.work.OverwritingInputMerger { *; }
