@@ -149,6 +149,18 @@ class DailyLogViewModel @AssistedInject constructor(
             is DailyLogEvent.OnNavigateToHabitScreen ->{
                 handleNavigationToHabitScreen()
             }
+
+            DailyLogEvent.OnToggleTextEditingControls -> {
+                handleTextEditingControlsToggle()
+            }
+        }
+    }
+
+    private fun handleTextEditingControlsToggle(){
+        _state.update {
+            it.copy(
+                isTextEditingControlsExpanded = !it.isTextEditingControlsExpanded
+            )
         }
     }
 
