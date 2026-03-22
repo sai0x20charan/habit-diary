@@ -46,4 +46,6 @@ sealed class DailyLogEvent {
 
     data object OnNavigateToHabitScreen : DailyLogEvent()
 
+    data object OnToggleTextEditingControls : DailyLogEvent()
+
 }
