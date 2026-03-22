@@ -2,6 +2,7 @@ package com.charan.habitdiary.presentation.settings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material.icons.rounded.WorkspacePremium
@@ -36,6 +38,7 @@ import com.charan.habitdiary.R
 import com.charan.habitdiary.data.repository.impl.BackupRepositoryImpl.Companion.FILE_TYPE
 import com.charan.habitdiary.presentation.common.components.CustomListItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
+import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.settings.components.SectionHeader
 import com.charan.habitdiary.presentation.settings.components.SettingsRowItem
 import com.charan.habitdiary.presentation.settings.components.SettingsSwitchItem
@@ -167,8 +170,18 @@ fun SettingsScreen(
                 )
 
                 SettingsSwitchItem(
+                    title = stringResource(R.string.biometric_lock),
+                    index = IndexItem.FIRST,
+                    isChecked = state.isBiometricLockEnabled,
+                    onCheckedChange = {
+                        viewModel.onEvent(SettingsScreenEvent.OnBiometricLockChange(it))
+                    },
+                    leadingIcon = Icons.Rounded.Fingerprint
+                )
+
+                SettingsSwitchItem(
                     title = stringResource(R.string.hour_format_24),
-                    index = IndexItem.FIRST_AND_LAST,
+                    index = IndexItem.LAST,
                     isChecked = state.is24HourFormat,
                     onCheckedChange = {
                         viewModel.onEvent(SettingsScreenEvent.OnTimeFormatChange(it))

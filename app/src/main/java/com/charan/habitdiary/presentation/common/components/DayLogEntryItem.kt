@@ -1,3 +1,5 @@
+package com.charan.habitdiary.presentation.common.components
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -6,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,8 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.charan.habitdiary.presentation.common.components.CustomCarouselImageItem
-import kotlinx.coroutines.flow.merge
+import com.charan.habitdiary.R
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichText
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -67,6 +71,10 @@ fun LogEntryCard(
     modifier: Modifier = Modifier,
     onImageClick : (String) -> Unit
 ) {
+    val richTextState = rememberRichTextState()
+    LaunchedEffect(note) {
+        richTextState.setMarkdown(note)
+    }
     ElevatedCard(
         onClick = onClick,
         modifier = modifier
@@ -88,7 +96,7 @@ fun LogEntryCard(
         ) {
             if(habitName.isNotEmpty()){
                 Text(
-                    text = stringResource(com.charan.habitdiary.R.string.habit_completed),
+                    text = stringResource(R.string.habit_completed),
                     style = MaterialTheme.typography.labelSmallEmphasized.copy(
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -112,13 +120,14 @@ fun LogEntryCard(
 
             }
             if (note.isNotEmpty()) {
-                Text(
-                    text = note,
+                RichText(
+                    state = richTextState,
                     style = MaterialTheme.typography.bodyLargeEmphasized.copy(
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = MaterialTheme.typography.bodyLargeEmphasized.lineHeight * 1.2f
-                    )
+                    ),
+                    maxLines = 3
                 )
             }
         }

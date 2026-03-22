@@ -11,6 +11,8 @@ sealed class SettingsScreenEvent {
 
     data class OnUseSystemFontChange(val useSystemFont : Boolean) : SettingsScreenEvent()
 
+    data class OnBiometricLockChange(val isEnabled : Boolean) : SettingsScreenEvent()
+
     data object OnAboutLibrariesClick : SettingsScreenEvent()
 
     data object OnBack : SettingsScreenEvent()

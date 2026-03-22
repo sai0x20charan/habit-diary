@@ -30,6 +30,8 @@ class DateStoreRepositoryImpl(
         private val KEY_HABIT_SORT_TYPE = stringPreferencesKey("habit_sort_type")
 
         private val KEY_DAILY_LOG_SORT_TYPE = stringPreferencesKey("daily_log_sort_type")
+
+        private val KEY_BIOMETRIC_LOCK = booleanPreferencesKey("biometric_lock")
     }
 
 
@@ -120,4 +122,15 @@ class DateStoreRepositoryImpl(
             preferences[KEY_DAILY_LOG_SORT_TYPE] = sortType.name
         }
     }
+
+    override suspend fun setBiometricLockEnabled(isEnabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_BIOMETRIC_LOCK] = isEnabled
+        }
+    }
+
+    override val getBiometricLockEnabled: Flow<Boolean>
+        get() = context.dataStore.data.map { pref ->
+            pref[KEY_BIOMETRIC_LOCK] ?: false
+        }
 }

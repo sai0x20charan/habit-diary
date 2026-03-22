@@ -9,5 +9,6 @@ data class SettingsState(
     val is24HourFormat: Boolean = false,
     val appVersion : String = "",
     val isExporting: Boolean = false,
-    val isImporting : Boolean = false
+    val isImporting : Boolean = false,
+    val isBiometricLockEnabled : Boolean = false
 )

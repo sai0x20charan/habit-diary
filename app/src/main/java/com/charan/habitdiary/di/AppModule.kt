@@ -1,6 +1,7 @@
 package com.charan.habitdiary.di
 
 import android.content.Context
+import androidx.biometric.BiometricManager
 import com.charan.habitdiary.data.local.AppDatabase
 import com.charan.habitdiary.data.local.dao.DailyLogDao
 import com.charan.habitdiary.data.local.dao.DailyLogMediaDao
@@ -97,5 +98,11 @@ class AppModule {
         habitLocalRepository,
         notificationScheduler
     )
+
+    @Provides
+    @Singleton
+    fun provideBiometricManager(
+        @ApplicationContext context: Context
+    ) : BiometricManager = BiometricManager.from(context)
 
 }

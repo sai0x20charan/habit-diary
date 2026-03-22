@@ -34,4 +34,8 @@ interface DataStoreRepository {
     val dailyLogSortType : Flow<DailyLogSortType>
 
     suspend fun setDailyLogSortType(sortType : DailyLogSortType)
+
+    suspend fun setBiometricLockEnabled(isEnabled : Boolean)
+
+    val getBiometricLockEnabled : Flow<Boolean>
 }

@@ -1,6 +1,7 @@
 package com.charan.habitdiary.presentation.settings
 
 import android.net.Uri
+import androidx.biometric.BiometricManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.BuildConfig
@@ -24,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val dataStore : DataStoreRepository,
-    private val backupRepository: BackupRepository
+    private val backupRepository: BackupRepository,
+    private val biometricManager : BiometricManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
@@ -79,6 +81,19 @@ class SettingsViewModel @Inject constructor(
             is SettingsScreenEvent.OnUseSystemFontChange -> {
                 handleUseSystemFont(event.useSystemFont)
             }
+
+            is SettingsScreenEvent.OnBiometricLockChange -> {
+                handleBiometricLockChange(event.isEnabled)
+
+            }
+        }
+    }
+
+    private fun handleBiometricLockChange(isEnabled : Boolean){
+        if(isEnabled){
+            checkIfBiometricIsAvailable()
+        }else{
+            updateBiometricPreference(false)
         }
     }
 
@@ -114,6 +129,14 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            dataStore.getBiometricLockEnabled.collect { isEnabled ->
+                _state.update {
+                    it.copy(isBiometricLockEnabled = isEnabled)
+                }
+            }
+        }
     }
 
 
@@ -134,6 +157,38 @@ class SettingsViewModel @Inject constructor(
 
     private fun setDynamicColorsState(isEnabled : Boolean) = viewModelScope.launch {
         dataStore.setDynamicColorsState(isEnabled)
+    }
+
+    private fun checkIfBiometricIsAvailable() =viewModelScope.launch{
+        when(biometricManager.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    BiometricManager.Authenticators.BIOMETRIC_WEAK
+        )){
+            BiometricManager.BIOMETRIC_SUCCESS -> {
+                _state.update {
+                    it.copy(
+                        isBiometricLockEnabled = true
+                    )
+                }
+                updateBiometricPreference(true)
+            }
+            else -> {
+                _state.update {
+                    it.copy(
+                        isBiometricLockEnabled = false
+                    )
+                }
+                updateBiometricPreference(false)
+                sendEvent(
+                    ShowToast(ToastMessage.Res(R.string.biometric_unavailable))
+                )
+
+            }
+        }
+    }
+
+    private fun updateBiometricPreference(isEnabled: Boolean) = viewModelScope.launch {
+        dataStore.setBiometricLockEnabled(isEnabled)
     }
 
     private fun sendEvent(event : SettingsScreenEffect) = viewModelScope.launch{

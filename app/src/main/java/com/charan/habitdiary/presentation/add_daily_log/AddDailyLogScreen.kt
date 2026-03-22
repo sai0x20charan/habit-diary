@@ -1,29 +1,21 @@
 package com.charan.habitdiary.presentation.add_daily_log
 
 import android.Manifest
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.rounded.AttachFile
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconButtonDefaults.IconButtonWidthOption
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -33,17 +25,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.habitdiary.R
 import com.charan.habitdiary.presentation.add_daily_log.DailyLogEvent.*
+import com.charan.habitdiary.presentation.add_daily_log.components.DiaryEditorToolbar
 import com.charan.habitdiary.presentation.add_daily_log.components.AddNoteItem
 import com.charan.habitdiary.presentation.add_daily_log.components.DateTimeRow
 import com.charan.habitdiary.presentation.add_daily_log.components.HabitDetailsCard
 import com.charan.habitdiary.presentation.add_daily_log.components.ImagePickOptionsBottomSheet
-import com.charan.habitdiary.presentation.common.components.ActionButtonRow
 import com.charan.habitdiary.presentation.common.components.CustomCarouselImageItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.components.DeleteWarningDialog
@@ -55,6 +51,7 @@ import com.charan.habitdiary.utils.showToast
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.LocalDate
 
@@ -79,6 +76,7 @@ fun AddDailyLogScreen(
     )
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val richTextState = rememberRichTextState()
     val imagePickOptionsBottomSheetState = rememberModalBottomSheetState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris->
@@ -261,26 +259,6 @@ fun AddDailyLogScreen(
                         CircularWavyProgressIndicator(
                             modifier = Modifier.size(30.dp)
                         )
-                    } else {
-                        FilledTonalIconButton(
-                            onClick = {
-                                viewModel.onEvent(DailyLogEvent.OnToggleImagePickOptionsSheet(true))
-                            },
-                            modifier = Modifier
-                                .size(
-                                    IconButtonDefaults.
-                                    smallContainerSize(IconButtonWidthOption.Wide)
-                                ),
-                            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            ),
-                            shapes = IconButtonDefaults.shapes()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.AttachFile,
-                                contentDescription = stringResource(R.string.add_image)
-                            )
-                        }
                     }
                 }
             )
@@ -290,26 +268,41 @@ fun AddDailyLogScreen(
             val hasNotes = state.dailyLogItemDetails.notesText.isNotBlank()
             val hasHabit = state.dailyLogItemDetails.habitId != null
             val canEditContent = (hasMedia || hasNotes) && !state.isLoading
-
-            ActionButtonRow(
-                saveButtonText = stringResource(R.string.save_log),
-                showDeleteButton = state.isEdit,
-                onSave = {
-                    viewModel.onEvent(DailyLogEvent.OnSaveDailyLogClick)
-                },
-                onDelete = {
-                    viewModel.onEvent(DailyLogEvent.OnToggleDeleteDialog(true))
-                },
-                isSaveEnabled = canEditContent || hasHabit
-            )
-
-        }
+                    DiaryEditorToolbar(
+                        onSaveLog = {
+                            viewModel.onEvent(DailyLogEvent.OnSaveDailyLogClick)
+                        },
+                        onDeleteLogClick = {
+                            viewModel.onEvent(DailyLogEvent.OnToggleDeleteDialog(true))
+                        },
+                        onExpandEditingToolsClick = { viewModel.onEvent(DailyLogEvent.OnToggleTextEditingControls) },
+                        isEditingToolsExpanded = state.isTextEditingControlsExpanded,
+                        onBoldTextClick = {
+                            richTextState.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                        },
+                        onItalicTextClick = {
+                            richTextState.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                        },
+                        onUnderlineTextClick = {
+                            richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                        },
+                        isBoldTextSelected = richTextState.currentSpanStyle.fontWeight == FontWeight.Bold,
+                        isItalicTextSelected = richTextState.currentSpanStyle.fontStyle == FontStyle.Italic,
+                        isUnderlineTextSelected = richTextState.currentSpanStyle.textDecoration == TextDecoration.Underline,
+                        isSaveEnabled = canEditContent || hasHabit,
+                        showDeleteButton = state.isEdit,
+                        onAttachMedia = {
+                            viewModel.onEvent(DailyLogEvent.OnToggleImagePickOptionsSheet(true))
+                        }
+                    )
+        },
+        modifier = Modifier.imePadding()
     ) { innerPadding->
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
                 .padding(horizontal = 16.dp)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = innerPadding,
         ) {
             if(state.dailyLogItemDetails.habitId!=null){
                 item {
@@ -357,7 +350,8 @@ fun AddDailyLogScreen(
                     value = state.dailyLogItemDetails.notesText,
                     onValueChange = {
                         viewModel.onEvent(DailyLogEvent.OnNotesTextChange(it))
-                    }
+                    },
+                    state = richTextState
                 )
 
 
