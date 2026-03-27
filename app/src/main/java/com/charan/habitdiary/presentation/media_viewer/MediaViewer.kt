@@ -1,5 +1,6 @@
 package com.charan.habitdiary.presentation.media_viewer
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.widget.Toast
@@ -27,21 +28,29 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charan.habitdiary.R
 import com.charan.habitdiary.presentation.common.components.BackButton
+import com.charan.habitdiary.presentation.common.components.RationaleDialog
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.media_viewer.components.MediaActionButton
 import com.charan.habitdiary.utils.isVideo
 import com.charan.habitdiary.utils.showToast
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
 import kotlin.math.abs
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun ImageViewerScreen(
     allImages: List<String>,
@@ -53,6 +62,17 @@ fun ImageViewerScreen(
     val pageState = rememberPagerState(pageCount = { allImages.size })
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    val storagePermission = rememberPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE){ isGranted ->
+        if(isGranted){
+            viewModel.onEvent(
+                MediaViewerEvents.DownloadMedia(
+                    filePath = allImages[pageState.currentPage]
+                )
+            )
+        }
+    }
+
 
     LaunchedEffect(currentImage) {
         pageState.scrollToPage(allImages.indexOf(currentImage))
@@ -76,9 +96,31 @@ fun ImageViewerScreen(
                         context.startActivity(chooser)
                     }
 
+                is MediaViewerEffect.RequestStoragePermission -> {
+                    if(storagePermission.status.shouldShowRationale){
+                        viewModel.onEvent(MediaViewerEvents.ToggleStoragePermissionRationale(true))
+
+                    } else{
+                        storagePermission.launchPermissionRequest()
+                    }
+                }
             }
 
         }
+    }
+
+    if(state.value.showPermissionDialog){
+        RationaleDialog(
+            title = stringResource(R.string.storage_permission_required),
+            message = stringResource(R.string.storage_permission_description),
+            onDismissRequest = {
+                viewModel.onEvent(MediaViewerEvents.ToggleStoragePermissionRationale(false))
+            },
+            onConfirmRequest = {
+                viewModel.onEvent(MediaViewerEvents.ToggleStoragePermissionRationale(false))
+                viewModel.onEvent(MediaViewerEvents.OpenSettingsForPermission)
+            }
+        )
     }
 
     Scaffold(

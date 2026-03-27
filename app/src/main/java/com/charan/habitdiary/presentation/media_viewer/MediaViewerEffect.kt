@@ -8,4 +8,6 @@ sealed class MediaViewerEffect {
     data class ShowToast(val message : ToastMessage) : MediaViewerEffect()
 
     data class ShareMedia(val filePath : Uri) : MediaViewerEffect()
+
+    data object RequestStoragePermission : MediaViewerEffect()
 }
