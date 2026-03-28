@@ -1,6 +1,7 @@
 package com.charan.habitdiary.presentation.habits.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -67,7 +68,8 @@ fun HabitItemCard(
     isCompleted: Boolean,
     onCompletedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
-    habitDays: List<DayOfWeek>
+    habitDays: List<DayOfWeek>,
+    isSelected : Boolean = false
 ) {
     val daysText = when {
         habitDays.size == 7 -> stringResource(R.string.daily)
@@ -102,7 +104,8 @@ fun HabitItemCard(
                 } else{
                     Modifier
                 }
-            ),
+            )
+            .animateContentSize(),
         onClick = onClick,
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isCompleted) 1.dp else 5.dp)
     ) {

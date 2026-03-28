@@ -23,10 +23,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
+import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -38,12 +41,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
 import com.charan.habitdiary.presentation.diary.components.LogSortButton
+import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.utils.DateUtil.toLocale
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
@@ -53,7 +58,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3AdaptiveApi::class
 )
 @Composable
 fun DiaryScreen(
@@ -63,6 +68,11 @@ fun DiaryScreen(
     val viewModel = hiltViewModel<DiaryScreenViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scaffoldNavigator = rememberSupportingPaneScaffoldNavigator()
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isDetailPaneVisible = LocalTwoPaneVisibility.current
+    val showSidePane = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+            && !isDetailPaneVisible
     val weekCalendarState = rememberWeekCalendarState(
         startDate = state.startOfDate,
         endDate = state.endOfDate,
@@ -179,92 +189,99 @@ fun DiaryScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-            AnimatedVisibility(
-                visible = state.selectedCalendarView == CalendarViewType.WEEK,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                CustomWeekCalendar(
-                    calendarState = weekCalendarState,
-                    onClick = { date ->
-                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
-                    },
-                    currentDate = state.currentDate,
-                    selectedDate = state.selectedDate,
-                    visibleMonth = weekCalendarState.lastVisibleWeek.days.last().date.month,
-                    datesWithLogs = state.datesWithLogs
-                )
-            }
-            AnimatedVisibility(
-                visible = state.selectedCalendarView == CalendarViewType.MONTH,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                MonthCalendarView(
-                    state = monthCalendarState,
-                    currentDate = state.currentDate,
-                    selectedDate = state.selectedDate,
-                    onClick = { date ->
-                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
-                    },
-                    visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
-                    datesWithLogs = state.datesWithLogs
-                )
-            }
+        SupportingPaneScaffold(
+            modifier = Modifier.padding(innerPadding),
+            directive = scaffoldNavigator.scaffoldDirective,
+            value = scaffoldNavigator.scaffoldValue,
+            mainPane = {
+                AnimatedPane {
+                    Column(
+                        modifier = Modifier
 
-
-            LazyColumn(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-            ) {
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
                     ) {
-                        LogSortButton(
-                            sortTypeRes = state.sortType.toLocaleString(),
-                            icon = when(state.sortType){
-                                DailyLogSortType.NEWEST_FIRST -> R.drawable.new_first_sort
-                                DailyLogSortType.OLDEST_FIRST -> R.drawable.old_first_sort
-                            },
-                            onToggleSort = {
-                                viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
-                            }
-
-                        )
-                    }
-                }
-                items(state.dailyLogItem.size) { index ->
-                    val log = state.dailyLogItem[index]
-                    DayLogEntryItem(
-                        note = log.logNote,
-                        time = log.createdAt,
-                        mediaPath = log.mediaPaths,
-                        onClick = {
-                            viewModel.onEvent(
-                                DiaryScreenEvents.OnNavigateToAddDailyLogScreen(
-                                    log.id
-                                )
-                            )
-
-                        },
-                        habitName = log.habitName ?: "",
-                        onImageClick = { imagePath ->
-                            onImageOpen(
-                                log.mediaPaths,
-                                imagePath
+                        AnimatedVisibility(
+                            visible = state.selectedCalendarView == CalendarViewType.WEEK,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            CustomWeekCalendar(
+                                calendarState = weekCalendarState,
+                                onClick = { date ->
+                                    viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                },
+                                currentDate = state.currentDate,
+                                selectedDate = state.selectedDate,
+                                visibleMonth = weekCalendarState.lastVisibleWeek.days.last().date.month,
+                                datesWithLogs = state.datesWithLogs
                             )
                         }
-                    )
+                        AnimatedVisibility(
+                            visible = state.selectedCalendarView == CalendarViewType.MONTH,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            MonthCalendarView(
+                                state = monthCalendarState,
+                                currentDate = state.currentDate,
+                                selectedDate = state.selectedDate,
+                                onClick = { date ->
+                                    viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                },
+                                visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
+                                datesWithLogs = state.datesWithLogs
+                            )
+                        }
+
+                        if(!showSidePane){
+                            DiaryListContent(
+                                state = state,
+                                onSortToggle = {
+                                    viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
+                                },
+                                onItemClick = {
+                                    viewModel.onEvent(
+                                        DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
+                                    )
+                                },
+                                onImageClick = onImageOpen,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            )
+
+                        }
+
+
+                    }
+                }
+
+            },
+            supportingPane = {
+                if (showSidePane) {
+                    AnimatedPane(
+                        modifier = Modifier.preferredWidth(0.5f)
+                    ) {
+                        DiaryListContent(
+                            state = state,
+                            onSortToggle = {
+                                viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
+                            },
+                            onItemClick = {
+                                viewModel.onEvent(
+                                    DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
+                                )
+                            },
+                            onImageClick = onImageOpen,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        )
+                    }
+
                 }
             }
-        }
+        )
+
 
 
     }
@@ -306,5 +323,54 @@ private fun ResetCalendarButton(
             imageVector = Icons.Rounded.Event,
             contentDescription = "Reset Calendar to Current Date"
         )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DiaryListContent(
+    modifier: Modifier,
+    state: DiaryScreenState,
+
+    onSortToggle: () -> Unit,
+    onItemClick: (Long) -> Unit,
+    onImageClick: (List<String>, String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .then(modifier)
+    ) {
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                LogSortButton(
+                    sortTypeRes = state.sortType.toLocaleString(),
+                    icon = when (state.sortType) {
+                        DailyLogSortType.NEWEST_FIRST -> R.drawable.new_first_sort
+                        DailyLogSortType.OLDEST_FIRST -> R.drawable.old_first_sort
+                    },
+                    onToggleSort = onSortToggle
+                )
+            }
+        }
+
+        items(state.dailyLogItem.size) { index ->
+            val log = state.dailyLogItem[index]
+
+            DayLogEntryItem(
+                note = log.logNote,
+                time = log.createdAt,
+                mediaPath = log.mediaPaths,
+                onClick = { onItemClick(log.id) },
+                habitName = log.habitName ?: "",
+                onImageClick = { imagePath ->
+                    onImageClick(log.mediaPaths, imagePath)
+                }
+            )
+        }
     }
 }

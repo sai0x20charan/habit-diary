@@ -22,7 +22,8 @@ data class HabitItemUIState(
     val isDone : Boolean = false,
     val logId  : Long?,
     val habitReminderTime : String?,
-    val habitFrequency : List<DayOfWeek> = emptyList()
+    val habitFrequency : List<DayOfWeek> = emptyList(),
+    val isSelected : Boolean = false,
 )
 
 
