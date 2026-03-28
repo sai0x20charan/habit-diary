@@ -27,6 +27,7 @@ fun RootNavigation(
     mediaList : List<Uri>? = null
 ) {
     val backStack = rememberNavBackStack(Destinations.BottomBarNav)
+    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
     LaunchedEffect(deepLinkNavKey, onBoardingCompleted, mediaList) {
         if (deepLinkNavKey != null) {
             backStack.clear()
@@ -48,9 +49,14 @@ fun RootNavigation(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        sceneStrategies = listOf(listDetailStrategy),
+
         entryProvider = { key->
             when(key){
-                is Destinations.BottomBarNav -> NavEntry(key){
+                is Destinations.BottomBarNav -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.listPane()
+                ){
                     BottomBarNavigation(
                         onAddHabitNav = {
                             backStack.add(Destinations.AddHabit(id = it))
@@ -71,7 +77,10 @@ fun RootNavigation(
 
                     )
                 }
-                is Destinations.AddHabit -> NavEntry(key){
+                is Destinations.AddHabit -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.detailPane()
+                ){
                     AddHabitScreen(
                         onNavigateBack = { isDeleted ->
                             if (isDeleted) {
@@ -82,7 +91,10 @@ fun RootNavigation(
                         key.id
                     )
                 }
-                is Destinations.AddDailyLog -> NavEntry(key){
+                is Destinations.AddDailyLog -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.detailPane()
+                    ){
                     AddDailyLogScreen(
                         onNavigateBack = {
                             backStack.removeLastOrNull()
@@ -104,7 +116,10 @@ fun RootNavigation(
 
                     )
                 }
-                is Destinations.LibrariesScreenNav -> NavEntry(key){
+                is Destinations.LibrariesScreenNav -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.detailPane()
+                    ){
                     AboutLibrariesScreen(
                         onBack = {
                             backStack.removeLastOrNull()
@@ -130,7 +145,10 @@ fun RootNavigation(
                     )
                 }
 
-                is Destinations.HabitStatsScreeNav -> NavEntry(key){
+                is Destinations.HabitStatsScreeNav -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.detailPane()
+                    ){
                     HabitStatsScreen(
                         habitId = key.habitId,
                         onNavigateBack = {

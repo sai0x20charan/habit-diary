@@ -46,6 +46,7 @@ import com.charan.habitdiary.presentation.common.components.DeleteWarningDialog
 import com.charan.habitdiary.presentation.common.components.RationaleDialog
 import com.charan.habitdiary.presentation.common.components.SelectDateDialog
 import com.charan.habitdiary.presentation.common.components.SelectTimeDialog
+import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.utils.isVideo
 import com.charan.habitdiary.utils.showToast
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -260,7 +261,7 @@ fun AddDailyLogScreen(
                             modifier = Modifier.size(30.dp)
                         )
                     }
-                }
+                },
             )
         },
         bottomBar = {

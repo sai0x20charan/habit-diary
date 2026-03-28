@@ -38,9 +38,10 @@ fun CustomMediumTopBar(
         ),
         navigationIcon = {
             if(showBackButton){
-                BackButton {
-                    onBackClick()
-                }
+                    BackButton {
+                        onBackClick()
+                    }
+
             }
         },
         actions = actions
