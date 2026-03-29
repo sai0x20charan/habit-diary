@@ -35,6 +35,8 @@
     <string name="theme">थीम</string>
     <string name="use_dynamic_color">डायनामिक रंग का उपयोग करें</string>
     <string name="general">सामान्य</string>
+    <string name="security">सुरक्षा</string>
+    <string name="time_format">समय प्रारूप</string>
     <string name="hour_format_24">24 घंटे का प्रारूप</string>
     <string name="about">ऐप के बारे में</string>
     <string name="open_source_libraries">ओपन सोर्स लाइब्रेरीज़</string>
@@ -46,6 +48,8 @@
     <string name="dark">डार्क</string>
     <string name="mark_as_done">पूरा हुआ चिन्हित करें</string>
     <string name="saved_to_download">डाउनलोड्स में सहेजा गया</string>
+    <string name="backup_restore">बैकअप और पुनर्स्थापना</string>
+    <string name="support">सहायता</string>
 
 
     <!-- Onboarding Screen Strings -->

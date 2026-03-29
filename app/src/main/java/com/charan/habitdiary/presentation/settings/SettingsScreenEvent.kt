@@ -24,4 +24,8 @@ sealed class SettingsScreenEvent {
     data class RestoreBackup(val uri : Uri) : SettingsScreenEvent()
 
     data object OnImportDataClick : SettingsScreenEvent()
+
+    data object OnOpenSourceCodeClick : SettingsScreenEvent()
+
+    data object OnSendFeedbackClick : SettingsScreenEvent()
 }

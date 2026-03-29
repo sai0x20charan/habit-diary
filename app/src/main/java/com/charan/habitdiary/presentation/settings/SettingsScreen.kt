@@ -1,5 +1,7 @@
 package com.charan.habitdiary.presentation.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
@@ -8,11 +10,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Fingerprint
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material.icons.rounded.WorkspacePremium
@@ -46,6 +51,8 @@ import com.charan.habitdiary.presentation.settings.components.ThemeOptionButtonG
 import com.charan.habitdiary.ui.theme.IndexItem
 import com.charan.habitdiary.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
+import com.charan.habitdiary.utils.launchFeedbackEmail
+import com.charan.habitdiary.utils.launchUrl
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -95,6 +102,14 @@ fun SettingsScreen(
 
                 SettingsScreenEffect.LaunchOpenDocument -> {
                     pickedFile.launch(arrayOf(FILE_TYPE))
+                }
+
+                is SettingsScreenEffect.OpenUrl -> {
+                    context.launchUrl(effect.url)
+                }
+
+                SettingsScreenEffect.LaunchSendFeedbackEmail ->{
+                    context.launchFeedbackEmail()
                 }
             }
         }
@@ -192,7 +207,7 @@ fun SettingsScreen(
 
             item {
                 SectionHeader(
-                    stringResource(R.string.backup)
+                    stringResource(R.string.backup_restore)
                 )
                 CustomListItem(
                     indexItem = IndexItem.FIRST,
@@ -243,6 +258,30 @@ fun SettingsScreen(
 
             item {
                 SectionHeader(
+                    stringResource(R.string.support)
+                )
+                CustomListItem(
+                    indexItem = IndexItem.FIRST_AND_LAST,
+                    headLineContent = {
+                        Text(stringResource(R.string.send_feedback))
+                    },
+                    onClick = {
+                        viewModel.onEvent(
+                            SettingsScreenEvent.OnSendFeedbackClick
+                        )
+                    },
+
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Rounded.Email,
+                            contentDescription = stringResource(R.string.send_feedback)
+                        )
+                    }
+                )
+            }
+
+            item {
+                SectionHeader(
                     stringResource(R.string.about)
                 )
                 CustomListItem(
@@ -262,6 +301,24 @@ fun SettingsScreen(
                 )
 
                 CustomListItem(
+                    indexItem = IndexItem.MIDDLE,
+                    headLineContent = {
+                        Text(stringResource(R.string.source_code))
+                    },
+                    onClick = {
+                        viewModel.onEvent(
+                            SettingsScreenEvent.OnOpenSourceCodeClick
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Rounded.Folder,
+                            contentDescription = stringResource(R.string.source_code)
+                        )
+                    }
+                )
+
+                CustomListItem(
                     indexItem = IndexItem.LAST,
                     headLineContent = {
                         Text(stringResource(R.string.app_version))
@@ -274,7 +331,8 @@ fun SettingsScreen(
                             imageVector = Icons.Rounded.Code,
                             contentDescription = stringResource(R.string.app_version)
                         )
-                    }
+                    },
+                    modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
 

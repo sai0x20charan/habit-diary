@@ -20,12 +20,12 @@ import com.charan.habitdiary.ui.theme.customListItemShapes
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CustomListItem(
+    modifier: Modifier = Modifier,
     indexItem: IndexItem,
     headLineContent: @Composable () -> Unit,
     supportingContent : @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     leadingContent : @Composable (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
 

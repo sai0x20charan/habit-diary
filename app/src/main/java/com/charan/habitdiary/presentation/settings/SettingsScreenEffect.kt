@@ -12,4 +12,8 @@ sealed interface SettingsScreenEffect {
     data class ShowToast(val message : ToastMessage) : SettingsScreenEffect
 
     data object LaunchOpenDocument : SettingsScreenEffect
+
+    data class OpenUrl(val url : String) : SettingsScreenEffect
+
+    data object LaunchSendFeedbackEmail : SettingsScreenEffect
 }

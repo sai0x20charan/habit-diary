@@ -1,6 +1,9 @@
 package com.charan.habitdiary.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.presentation.common.model.ToastMessage
@@ -8,6 +11,9 @@ import com.kizitonwose.calendar.core.minusDays
 import com.kizitonwose.calendar.core.plusDays
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import androidx.core.net.toUri
+import com.charan.habitdiary.BuildConfig
+import com.charan.habitdiary.R
 
 fun String.isVideo(): Boolean {
     return endsWith(".mp4", true) ||
@@ -112,4 +118,50 @@ fun List<DailyLogEntity>.getBestHabitStreak(
 }
 
 fun isSDK29OrAbove() = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+
+fun Context.launchFeedbackEmail() {
+    try {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = "mailto:".toUri()
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(DEVELOPER_EMAIL))
+            putExtra(
+                Intent.EXTRA_SUBJECT,
+                "Habit Diary Feedback"
+            )
+            putExtra(Intent.EXTRA_TEXT, generateFeedbackEmailBody())
+        }
+        startActivity(intent)
+    } catch (e: Exception) {
+        showToast(
+            ToastMessage.Res(R.string.no_email_client)
+        )
+    }
+}
+private fun generateFeedbackEmailBody(): String {
+    return buildString {
+        append("\n\n")
+        appendLine("---")
+        appendLine("Device & App Info:")
+        appendLine("App Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+        appendLine("Android Version: ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
+        appendLine("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+        appendLine("---")
+    }
+}
+
+fun Context.launchUrl(url : String){
+    try {
+        this.startActivity(
+            Intent(Intent.ACTION_VIEW).apply {
+                data = url.toUri()
+            }
+        )
+    } catch (e: Exception) {
+        showToast(
+            ToastMessage.Res(R.string.no_browser_found)
+        )
+        return
+    }
+
+}
 

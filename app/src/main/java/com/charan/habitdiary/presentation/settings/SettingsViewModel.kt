@@ -11,6 +11,7 @@ import com.charan.habitdiary.data.repository.BackupRepository
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.settings.SettingsScreenEffect.*
+import com.charan.habitdiary.utils.GITHUB_URL
 import com.charan.habitdiary.utils.ProcessState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -86,8 +87,17 @@ class SettingsViewModel @Inject constructor(
                 handleBiometricLockChange(event.isEnabled)
 
             }
+
+            is SettingsScreenEvent.OnOpenSourceCodeClick -> {
+                sendEvent(OpenUrl(GITHUB_URL))
+            }
+
+            SettingsScreenEvent.OnSendFeedbackClick -> {
+                sendEvent(LaunchSendFeedbackEmail)
+            }
         }
     }
+
 
     private fun handleBiometricLockChange(isEnabled : Boolean){
         if(isEnabled){

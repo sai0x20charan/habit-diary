@@ -37,6 +37,8 @@
     <string name="use_dynamic_color">Use Dynamic Color</string>
     <string name="use_system_font">Use System Font</string>
     <string name="general">General</string>
+    <string name="security">Security</string>
+    <string name="time_format">Time &amp; Format</string>
     <string name="hour_format_24">24 Hour Format</string>
     <string name="biometric_lock">Biometric Lock</string>
     <string name="biometric_prompt_title">Unlock to use Habit Diary</string>
@@ -55,6 +57,7 @@
     <string name="mark_as_done">Mark as Done</string>
     <string name="saved_to_download">Saved to Downloads</string>
     <string name="backup">Backup</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
     <string name="export_data">Export Data</string>
     <string name="import_data">Import Data</string>
     <string name="backup_saved">Backup saved successfully</string>
@@ -74,6 +77,9 @@
     <string name="unlock_app">Unlock</string>
     <string name="storage_permission_required">Storage Permission Required</string>
     <string name="storage_permission_description">To save media to your device, please grant storage permission.</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="source_code">Source code</string>
+    <string name="support">Support</string>
 
 
     <!-- Onboarding Screen Strings -->
@@ -110,6 +116,8 @@
     <string name="remove_button">Remove Button</string>
     <string name="repeat_icon">Repeat Icon</string>
     <string name="close_button">Close Button</string>
+    <string name="no_email_client">No email client found</string>
+    <string name="no_browser_found">No browser found</string>
 
 
 
