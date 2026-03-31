@@ -14,6 +14,7 @@ import kotlinx.datetime.LocalDate
 import androidx.core.net.toUri
 import com.charan.habitdiary.BuildConfig
 import com.charan.habitdiary.R
+import java.util.Locale
 
 fun String.isVideo(): Boolean {
     return endsWith(".mp4", true) ||
@@ -163,5 +164,21 @@ fun Context.launchUrl(url : String){
         return
     }
 
+}
+
+fun Long.toFormatTimeMs(): String {
+    if (this <= 0) return "0:00"
+
+    val totalSeconds = this / 1000
+
+    val seconds = (totalSeconds % 60).toInt()
+    val minutes = ((totalSeconds / 60) % 60).toInt()
+    val hours = (totalSeconds / 3600).toInt()
+
+    return if (hours > 0) {
+        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+    }
 }
 
