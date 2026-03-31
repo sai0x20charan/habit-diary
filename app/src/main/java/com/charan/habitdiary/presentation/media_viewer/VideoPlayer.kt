@@ -48,11 +48,13 @@ import androidx.media3.ui.PlayerView
 import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import androidx.media3.ui.compose.SurfaceType
+import androidx.media3.ui.compose.material3.Player
 import androidx.media3.ui.compose.material3.buttons.MuteButton
 import androidx.media3.ui.compose.material3.buttons.PlayPauseButton
 import androidx.media3.ui.compose.state.rememberMuteButtonState
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import androidx.media3.ui.compose.state.rememberProgressStateWithTickInterval
+import com.charan.habitdiary.utils.toFormatTimeMs
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -77,15 +79,9 @@ fun VideoViewer(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { context ->
-                PlayerView(context).apply {
-                    this.player = player
-                    this.useController = false
-                    this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                }
-            }
+        Player(
+            player = player,
+            showControls = false
         )
 
         if(showControls) {
@@ -103,11 +99,9 @@ fun VideoViewer(
                 ) {
                     PlayPauseButton(
                         player = player,
-                        modifier = Modifier
+                        modifier = Modifier,
                     )
-                    VideoTimeText(
-                        player = player
-                    )
+                    VideoTimeText(player)
                     MuteButton(
                         player = player
                     )
@@ -119,15 +113,15 @@ fun VideoViewer(
         }
     }
 }
-
 @OptIn(UnstableApi::class)
 @Composable
 private fun VideoTimeText(
     player: Player
 ) {
     val timeState = rememberProgressStateWithTickInterval(player)
+
     Text(
-        text = "${getStringForTime(timeState.currentPositionMs)}/ ${getStringForTime(timeState.durationMs)}",
+        text = "${timeState.currentPositionMs.toFormatTimeMs()} / ${timeState.durationMs.toFormatTimeMs()}",
         modifier = Modifier.padding(8.dp)
     )
 }
@@ -184,22 +178,22 @@ fun MiniVideoPlayer(
     Box(
         modifier = Modifier
     ) {
-
-        PlayerSurface(
+        Player(
             player = player,
             modifier = Modifier
-                .fillMaxSize().clickable(true){
-                onVideoClick()
-                                              },
-            surfaceType = SURFACE_TYPE_TEXTURE_VIEW
+                .fillMaxSize()
+                .clickable(true) {
+                    onVideoClick()
+                },
+            showControls = false,
 
         )
-
         FilledTonalIconButton(
             onClick = {
                 pausePlayState.onClick()
             },
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier
+                .align(Alignment.Center)
                 .size(30.dp)
             ,
             colors = IconButtonDefaults.filledTonalIconButtonColors(
