@@ -18,6 +18,7 @@ import com.charan.habitdiary.data.repository.impl.HabitLocalRepositoryImpl
 import com.charan.habitdiary.notification.NotificationHelper
 import com.charan.habitdiary.notification.NotificationScheduler
 import com.charan.habitdiary.utils.PermissionManager
+import com.charan.habitdiary.widgets.HabitDiaryWidgetManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -105,4 +106,10 @@ class AppModule {
         @ApplicationContext context: Context
     ) : BiometricManager = BiometricManager.from(context)
 
+
+    @Provides
+    @Singleton
+    fun provideWidgetManager(
+        @ApplicationContext context : Context
+    ) : HabitDiaryWidgetManager = HabitDiaryWidgetManager(context)
 }

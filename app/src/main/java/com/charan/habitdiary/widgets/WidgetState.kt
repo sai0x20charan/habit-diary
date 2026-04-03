@@ -1,4 +1,4 @@
-package com.charan.habitdiary.presentation.widgets
+package com.charan.habitdiary.widgets
 
 data class WidgetState(
     val date : String = "",
