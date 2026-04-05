@@ -124,7 +124,7 @@ fun CalendarHeaderItem(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                 style = MaterialTheme.typography.labelSmallEmphasized,
-                text = dayOfWeek.toLocale(TextStyle.SHORT_STANDALONE),
+                text = dayOfWeek.toLocale(TextStyle.NARROW_STANDALONE).uppercase(),
             )
         }
     }

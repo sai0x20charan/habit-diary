@@ -18,7 +18,8 @@ fun MonthCalendarView(
     onClick :(LocalDate) -> Unit,
     visibleMonth : Month,
     datesWithLogs : Set<LocalDate>,
-    habitDoneDates : Set<LocalDate> = emptySet()
+    habitDoneDates : Set<LocalDate> = emptySet(),
+    showWeekHeader: Boolean = true,
 ) {
     LaunchedEffect(Unit) {
         state.animateScrollToMonth(selectedDate.yearMonth)
@@ -39,8 +40,10 @@ fun MonthCalendarView(
                 isHabitDone = habitDoneDates.contains(it.date)
             )
         },
-        monthHeader ={
-            CalendarHeaderItem(it.weekDays.first().map { it.date.dayOfWeek })
+        monthHeader = if (showWeekHeader) {
+            { CalendarHeaderItem(it.weekDays.first().map { it.date.dayOfWeek }) }
+        } else {
+            null
         }
     )
 }
