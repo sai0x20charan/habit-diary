@@ -78,6 +78,7 @@
     <string name="storage_permission_required">Storage Permission Required</string>
     <string name="storage_permission_description">To save media to your device, please grant storage permission.</string>
     <string name="send_feedback">Send Feedback</string>
+    <string name="rate_app">Rate on Google Play</string>
     <string name="source_code">Source code</string>
     <string name="support">Support</string>
 

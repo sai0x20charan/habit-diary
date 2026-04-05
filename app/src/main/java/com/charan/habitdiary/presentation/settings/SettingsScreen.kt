@@ -25,6 +25,7 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -261,7 +263,7 @@ fun SettingsScreen(
                     stringResource(R.string.support)
                 )
                 CustomListItem(
-                    indexItem = IndexItem.FIRST_AND_LAST,
+                    indexItem = IndexItem.FIRST,
                     headLineContent = {
                         Text(stringResource(R.string.send_feedback))
                     },
@@ -275,6 +277,23 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Rounded.Email,
                             contentDescription = stringResource(R.string.send_feedback)
+                        )
+                    }
+                )
+
+                CustomListItem(
+                    indexItem = IndexItem.LAST,
+                    headLineContent = {
+                        Text(stringResource(R.string.rate_app))
+                    },
+                    onClick = {
+                        viewModel.onEvent(SettingsScreenEvent.OnRateAppClick)
+                    },
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(R.drawable.google_play),
+                            contentDescription = stringResource(R.string.rate_app),
+                            modifier = Modifier.size(IconButtonDefaults.mediumIconSize)
                         )
                     }
                 )
