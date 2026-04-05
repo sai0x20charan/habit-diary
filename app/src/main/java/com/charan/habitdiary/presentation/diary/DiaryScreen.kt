@@ -6,6 +6,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,22 +35,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
+import com.charan.habitdiary.presentation.common.components.CalendarHeaderItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
 import com.charan.habitdiary.presentation.diary.components.LogSortButton
 import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.utils.DateUtil.toLocale
+import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
@@ -73,6 +80,8 @@ fun DiaryScreen(
     val isDetailPaneVisible = LocalTwoPaneVisibility.current
     val showSidePane = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
             && !isDetailPaneVisible
+    val swipeThresholdPx = with(LocalDensity.current) { 48.dp.toPx() }
+    var verticalDragAmount by remember { mutableFloatStateOf(0f) }
     val weekCalendarState = rememberWeekCalendarState(
         startDate = state.startOfDate,
         endDate = state.endOfDate,
@@ -199,37 +208,76 @@ fun DiaryScreen(
                         modifier = Modifier
 
                     ) {
-                        AnimatedVisibility(
-                            visible = state.selectedCalendarView == CalendarViewType.WEEK,
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
+
+                        Column(
+                            modifier = Modifier.pointerInput(state.selectedCalendarView) {
+                                detectVerticalDragGestures(
+                                    onVerticalDrag = { _, dragAmount ->
+                                        verticalDragAmount += dragAmount
+                                    },
+                                    onDragEnd = {
+                                        when {
+                                            verticalDragAmount <= -swipeThresholdPx &&
+                                                    state.selectedCalendarView != CalendarViewType.WEEK -> {
+                                                viewModel.onEvent(
+                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                        CalendarViewType.WEEK
+                                                    )
+                                                )
+                                            }
+
+                                            verticalDragAmount >= swipeThresholdPx &&
+                                                    state.selectedCalendarView != CalendarViewType.MONTH -> {
+                                                viewModel.onEvent(
+                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                        CalendarViewType.MONTH
+                                                    )
+                                                )
+                                            }
+                                        }
+                                        verticalDragAmount = 0f
+                                    },
+                                    onDragCancel = {
+                                        verticalDragAmount = 0f
+                                    }
+                                )
+                            }
                         ) {
-                            CustomWeekCalendar(
-                                calendarState = weekCalendarState,
-                                onClick = { date ->
-                                    viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
-                                },
-                                currentDate = state.currentDate,
-                                selectedDate = state.selectedDate,
-                                visibleMonth = weekCalendarState.lastVisibleWeek.days.last().date.month,
-                                datesWithLogs = state.datesWithLogs
-                            )
-                        }
-                        AnimatedVisibility(
-                            visible = state.selectedCalendarView == CalendarViewType.MONTH,
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                            MonthCalendarView(
-                                state = monthCalendarState,
-                                currentDate = state.currentDate,
-                                selectedDate = state.selectedDate,
-                                onClick = { date ->
-                                    viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
-                                },
-                                visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
-                                datesWithLogs = state.datesWithLogs
-                            )
+                            CalendarHeaderItem(daysOfWeek())
+                            AnimatedVisibility(
+                                visible = state.selectedCalendarView == CalendarViewType.WEEK,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                CustomWeekCalendar(
+                                    calendarState = weekCalendarState,
+                                    onClick = { date ->
+                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                    },
+                                    currentDate = state.currentDate,
+                                    selectedDate = state.selectedDate,
+                                    visibleMonth = weekCalendarState.lastVisibleWeek.days.last().date.month,
+                                    datesWithLogs = state.datesWithLogs,
+                                    showWeekHeader = false
+                                )
+                            }
+                            AnimatedVisibility(
+                                visible = state.selectedCalendarView == CalendarViewType.MONTH,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                MonthCalendarView(
+                                    state = monthCalendarState,
+                                    currentDate = state.currentDate,
+                                    selectedDate = state.selectedDate,
+                                    onClick = { date ->
+                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                    },
+                                    visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
+                                    datesWithLogs = state.datesWithLogs,
+                                    showWeekHeader = false
+                                )
+                            }
                         }
 
                         if(!showSidePane){

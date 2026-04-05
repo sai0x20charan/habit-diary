@@ -16,15 +16,18 @@ fun CustomWeekCalendar(
     onClick : (LocalDate) -> Unit,
     currentDate : LocalDate,
     visibleMonth : Month,
-    datesWithLogs : Set<LocalDate>
+    datesWithLogs : Set<LocalDate>,
+    showWeekHeader: Boolean = true,
 ) {
     LaunchedEffect(Unit) {
         calendarState.animateScrollToWeek(selectedDate)
     }
     WeekCalendar(
         state = calendarState,
-        weekHeader = {
-            CalendarHeaderItem(it.days.map { it.date.dayOfWeek })
+        weekHeader = if (showWeekHeader) {
+            { CalendarHeaderItem(it.days.map { it.date.dayOfWeek }) }
+        } else {
+            null
         },
         dayContent = {
             CalendarDayItem(
