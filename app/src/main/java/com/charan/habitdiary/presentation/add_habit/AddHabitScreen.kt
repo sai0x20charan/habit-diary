@@ -8,9 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,17 +24,14 @@ import com.charan.habitdiary.presentation.add_habit.components.FormTextComponent
 import com.charan.habitdiary.presentation.add_habit.components.HabitReminderComponent
 import com.charan.habitdiary.presentation.add_habit.components.ScheduleHabitComponent
 import com.charan.habitdiary.presentation.common.components.ActionButtonRow
-import com.charan.habitdiary.presentation.common.components.BackButton
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.components.DeleteWarningDialog
 import com.charan.habitdiary.presentation.common.components.RationaleDialog
 import com.charan.habitdiary.presentation.common.components.SelectTimeDialog
-import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.datetime.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalPermissionsApi::class

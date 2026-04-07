@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.biometric.BiometricManager
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.kizitonwose.calendar.core.minusDays
@@ -180,5 +181,15 @@ fun Long.toFormatTimeMs(): String {
     } else {
         String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
     }
+}
+
+fun getAppVersion() = BuildConfig.VERSION_NAME
+
+fun BiometricManager.isBiometricAvailable(): Boolean {
+    return canAuthenticate(
+        BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    ) == BiometricManager.BIOMETRIC_SUCCESS
 }
 

@@ -166,7 +166,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.graphics.shapes)
-    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.biometric.compose)
     androidTestImplementation(libs.androidx.room.testing)
     implementation(libs.zoomable.image.coil3)
     implementation(libs.coil.video)

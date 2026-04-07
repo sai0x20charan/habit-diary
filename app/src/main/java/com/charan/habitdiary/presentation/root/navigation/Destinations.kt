@@ -1,4 +1,4 @@
-package com.charan.habitdiary.presentation.navigation
+package com.charan.habitdiary.presentation.root.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.datetime.LocalDate

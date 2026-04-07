@@ -1,4 +1,4 @@
-package com.charan.habitdiary.presentation.navigation
+package com.charan.habitdiary.presentation.root.navigation
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween

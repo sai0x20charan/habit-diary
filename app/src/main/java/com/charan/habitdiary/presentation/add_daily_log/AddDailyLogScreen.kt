@@ -4,12 +4,8 @@ import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -46,7 +42,6 @@ import com.charan.habitdiary.presentation.common.components.DeleteWarningDialog
 import com.charan.habitdiary.presentation.common.components.RationaleDialog
 import com.charan.habitdiary.presentation.common.components.SelectDateDialog
 import com.charan.habitdiary.presentation.common.components.SelectTimeDialog
-import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.utils.isVideo
 import com.charan.habitdiary.utils.showToast
 import com.google.accompanist.permissions.ExperimentalPermissionsApi

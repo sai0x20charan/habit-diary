@@ -1,6 +1,7 @@
 [versions]
 accompanistPermissions = "0.37.3"
 agp = "9.0.1"
+biometricCompose = "1.4.0-alpha06"
 coilCompose = "3.4.0"
 composeMultiplatform = "2.10.0"
 coreSplashscreen = "1.2.0"
@@ -44,6 +45,7 @@ nav3Material ="1.3.0-alpha09"
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
+androidx-biometric-compose = { module = "androidx.biometric:biometric-compose", version.ref = "biometricCompose" }
 androidx-compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 androidx-compose-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 androidx-compose-adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }

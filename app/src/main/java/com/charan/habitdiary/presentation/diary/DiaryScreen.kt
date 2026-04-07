@@ -54,7 +54,7 @@ import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
 import com.charan.habitdiary.presentation.diary.components.LogSortButton
-import com.charan.habitdiary.presentation.navigation.LocalTwoPaneVisibility
+import com.charan.habitdiary.presentation.root.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.utils.DateUtil.toLocale
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.compose.rememberCalendarState

@@ -1,11 +1,9 @@
-package com.charan.habitdiary.presentation.navigation
+package com.charan.habitdiary.presentation.root.navigation
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -14,7 +12,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.charan.habitdiary.presentation.add_daily_log.AddDailyLogScreen
 import com.charan.habitdiary.presentation.add_habit.AddHabitScreen
-import com.charan.habitdiary.presentation.habit_stats.HabitStatState
 import com.charan.habitdiary.presentation.habit_stats.HabitStatsScreen
 import com.charan.habitdiary.presentation.media_viewer.ImageViewerScreen
 import com.charan.habitdiary.presentation.on_boarding.OnBoardingScreen
