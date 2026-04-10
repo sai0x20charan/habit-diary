@@ -71,7 +71,9 @@ class AppViewModel @Inject constructor(
             }
         }
         launch {
-            val shouldShowChangeLog = dataStoreRepo.getLastScreenChangeLogVersion.first() != getAppVersion()
+            val shouldShowChangeLog =
+                dataStoreRepo.getLastScreenChangeLogVersion.first() != getAppVersion() &&
+                        dataStoreRepo.getOnBoardingCompleted.first()
             _state.update { state->
                 state.copy(
                     showChangeLog = shouldShowChangeLog

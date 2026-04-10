@@ -103,12 +103,12 @@ class SettingsViewModel @Inject constructor(
             }
 
             SettingsScreenEvent.OnToggleChangeLogClick -> {
-                handleChangeLockClick()
+                handleChangeLogClick()
             }
         }
     }
 
-    private fun handleChangeLockClick() = viewModelScope.launch {
+    private fun handleChangeLogClick() = viewModelScope.launch {
         _state.update {
             it.copy(
                 showChangeLog = !it.showChangeLog
