@@ -55,6 +55,8 @@ jobs:
             echo "IS_BETA=false" >> $GITHUB_ENV
             echo "APK_SUFFIX=" >> $GITHUB_ENV
           fi
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
 
       - name: Debug Version Info
         run: |
@@ -81,6 +83,21 @@ jobs:
           name: signed-aab
           path: app/build/outputs/bundle/release/*.aab
 
+      - name: Prepare Release Notes
+        run: |
+          RELEASE_DATE=$(date +'%Y-%m-%d')
+          CHANGELOG_PATH="app/src/main/assets/CHANGELOG.md"
+
+          echo "# Version $VERSION_NAME" > release_notes.md
+          echo "" >> release_notes.md
+          echo "Released: $RELEASE_DATE" >> release_notes.md
+          echo "" >> release_notes.md
+
+          if [ -f "$CHANGELOG_PATH" ]; then
+            cat "$CHANGELOG_PATH" >> release_notes.md
+          else
+            echo "No changelog found." >> release_notes.md
+          fi
 
       - name: Create GitHub Beta Release
         if: ${{ env.IS_BETA == 'true' }}
@@ -88,6 +105,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           prerelease: true
+          body_path: release_notes.md
           files: app/build/outputs/apk/release/*-beta.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -99,6 +117,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           prerelease: false
+          body_path: release_notes.md
           files: app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
