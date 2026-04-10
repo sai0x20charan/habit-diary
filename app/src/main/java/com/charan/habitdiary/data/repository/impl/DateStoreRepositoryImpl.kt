@@ -32,6 +32,8 @@ class DateStoreRepositoryImpl(
         private val KEY_DAILY_LOG_SORT_TYPE = stringPreferencesKey("daily_log_sort_type")
 
         private val KEY_BIOMETRIC_LOCK = booleanPreferencesKey("biometric_lock")
+
+        private val KEY_LAST_SCREEN_CHANGE_LOG_VERSION = stringPreferencesKey("last_screen_change_log_version")
     }
 
 
@@ -132,5 +134,17 @@ class DateStoreRepositoryImpl(
     override val getBiometricLockEnabled: Flow<Boolean>
         get() = context.dataStore.data.map { pref ->
             pref[KEY_BIOMETRIC_LOCK] ?: false
+        }
+
+    override suspend fun setLastScreenChangeLogVersion(version: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LAST_SCREEN_CHANGE_LOG_VERSION] = version
+        }
+
+    }
+
+    override val getLastScreenChangeLogVersion: Flow<String>
+        get() = context.dataStore.data.map { pref ->
+            pref[KEY_LAST_SCREEN_CHANGE_LOG_VERSION] ?: "0.0.0"
         }
 }

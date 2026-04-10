@@ -10,5 +10,6 @@ data class SettingsState(
     val appVersion : String = "",
     val isExporting: Boolean = false,
     val isImporting : Boolean = false,
-    val isBiometricLockEnabled : Boolean = false
+    val isBiometricLockEnabled : Boolean = false,
+    val showChangeLog : Boolean = false
 )

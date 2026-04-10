@@ -182,9 +182,6 @@ fun Long.toFormatTimeMs(): String {
         String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
     }
 }
-
-fun getAppVersion() = BuildConfig.VERSION_NAME
-
 fun BiometricManager.isBiometricAvailable(): Boolean {
     return canAuthenticate(
         BiometricManager.Authenticators.BIOMETRIC_STRONG or
@@ -193,3 +190,7 @@ fun BiometricManager.isBiometricAvailable(): Boolean {
     ) == BiometricManager.BIOMETRIC_SUCCESS
 }
 
+fun getAppVersionWithVersionCode() =
+    "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+
+fun getAppVersion() = BuildConfig.VERSION_NAME

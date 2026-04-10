@@ -38,4 +38,10 @@ interface DataStoreRepository {
     suspend fun setBiometricLockEnabled(isEnabled : Boolean)
 
     val getBiometricLockEnabled : Flow<Boolean>
+
+    suspend fun setLastScreenChangeLogVersion(version : String)
+
+    val getLastScreenChangeLogVersion : Flow<String>
+
+
 }

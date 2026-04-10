@@ -120,6 +120,8 @@
     <string name="no_email_client">No email client found</string>
     <string name="no_browser_found">No browser found</string>
     <string name="habit_diary_is_locked">Habit Diary Locked</string>
+    <string name="whats_new">What\'s New</string>
+    <string name="version_text">Version: %1$s</string>
 
 
 

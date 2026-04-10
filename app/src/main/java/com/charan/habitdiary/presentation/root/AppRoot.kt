@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.ThemeOption
+import com.charan.habitdiary.presentation.common.components.ChangeLogBottomSheet
 import com.charan.habitdiary.presentation.root.navigation.RootNavigation
 import com.charan.habitdiary.ui.theme.HabitDiaryTheme
 import com.charan.habitdiary.utils.showToast
@@ -83,6 +84,7 @@ fun AppRoot(
         }
     }
 
+
     val launchBiometric: () -> Unit = {
         biometricLauncher.launch(
             AuthenticationRequest.biometricRequest(
@@ -111,6 +113,11 @@ fun AppRoot(
         dynamicColor = state.dynamicColorsEnabled,
         isSystemFont = state.useSystemFont
     ) {
+        if(state.showChangeLog){
+            ChangeLogBottomSheet {
+                viewModel.onEvent(AppEvents.OnCloseChangeLog)
+            }
+        }
         Surface {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (!shouldShowBiometricLock) {

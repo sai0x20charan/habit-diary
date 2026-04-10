@@ -3,6 +3,7 @@ package com.charan.habitdiary.presentation.on_boarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.repository.DataStoreRepository
+import com.charan.habitdiary.utils.getAppVersion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,7 @@ class OnBoardingViewModel @Inject constructor(
         val nextPage = state.value.currentPage + 1
         if(nextPage == state.value.onBoardingPage.size){
             dataStoreRepo.setOnBoardingCompleted(true)
+            dataStoreRepo.setLastScreenChangeLogVersion(getAppVersion())
             sendEvent(OnBoardingEffects.NavigateToHome)
             return@launch
         }

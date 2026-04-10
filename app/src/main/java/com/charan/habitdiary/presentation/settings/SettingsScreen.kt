@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Contrast
@@ -43,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.repository.impl.BackupRepositoryImpl.Companion.FILE_TYPE
+import com.charan.habitdiary.presentation.common.components.ChangeLogBottomSheet
 import com.charan.habitdiary.presentation.common.components.CustomListItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.model.ToastMessage
@@ -115,6 +117,14 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    if(state.showChangeLog){
+        ChangeLogBottomSheet(
+            onDismiss = {
+                viewModel.onEvent(SettingsScreenEvent.OnToggleChangeLogClick)
+            }
+        )
     }
     Scaffold(
         topBar = {
@@ -333,6 +343,24 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Rounded.Folder,
                             contentDescription = stringResource(R.string.source_code)
+                        )
+                    }
+                )
+
+                CustomListItem(
+                    indexItem = IndexItem.MIDDLE,
+                    headLineContent = {
+                        Text(stringResource(R.string.whats_new))
+                    },
+                    onClick = {
+                        viewModel.onEvent(
+                            SettingsScreenEvent.OnToggleChangeLogClick
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Rounded.Campaign,
+                            contentDescription = stringResource(R.string.whats_new)
                         )
                     }
                 )

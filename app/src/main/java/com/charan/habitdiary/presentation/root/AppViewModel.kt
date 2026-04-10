@@ -70,6 +70,14 @@ class AppViewModel @Inject constructor(
                 handleBiometric()
             }
         }
+        launch {
+            val shouldShowChangeLog = dataStoreRepo.getLastScreenChangeLogVersion.first() != getAppVersion()
+            _state.update { state->
+                state.copy(
+                    showChangeLog = shouldShowChangeLog
+                )
+            }
+        }
     }
 
     private fun handleBiometric() = viewModelScope.launch {
@@ -93,7 +101,21 @@ class AppViewModel @Inject constructor(
             is AppEvents.OnAuthResult -> {
                 handleAuthResult(event.isSuccess)
             }
+
+            AppEvents.OnCloseChangeLog -> {
+                handleCloseChangeLog()
+
+            }
         }
+    }
+
+    private fun handleCloseChangeLog() = viewModelScope.launch {
+        dataStoreRepo.setLastScreenChangeLogVersion(getAppVersion())
+            _state.update { state->
+                state.copy(
+                    showChangeLog = false
+                )
+            }
     }
 
     private fun handleAuthResult(isUnlocked : Boolean) = viewModelScope.launch {

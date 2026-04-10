@@ -30,4 +30,6 @@ sealed class SettingsScreenEvent {
     data object OnSendFeedbackClick : SettingsScreenEvent()
 
     data object OnRateAppClick : SettingsScreenEvent()
+
+    data object OnToggleChangeLogClick : SettingsScreenEvent()
 }
