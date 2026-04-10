@@ -15,6 +15,7 @@ import com.charan.habitdiary.utils.GITHUB_URL
 import com.charan.habitdiary.utils.PLAY_STORE_URL
 import com.charan.habitdiary.utils.ProcessState
 import com.charan.habitdiary.utils.getAppVersionWithVersionCode
+import com.charan.habitdiary.utils.isBiometricAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -188,11 +189,8 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun checkIfBiometricIsAvailable() =viewModelScope.launch{
-        when(biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                    BiometricManager.Authenticators.BIOMETRIC_WEAK
-        )){
-            BiometricManager.BIOMETRIC_SUCCESS -> {
+        when (biometricManager.isBiometricAvailable()) {
+            true -> {
                 _state.update {
                     it.copy(
                         isBiometricLockEnabled = true
