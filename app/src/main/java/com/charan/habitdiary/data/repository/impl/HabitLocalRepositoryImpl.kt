@@ -10,6 +10,7 @@ import com.charan.habitdiary.data.local.model.DailyLogWithHabit
 import com.charan.habitdiary.data.local.model.HabitWithDone
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.data.repository.HabitLocalRepository
+import com.charan.habitdiary.utils.DateUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -123,7 +124,7 @@ class HabitLocalRepositoryImpl(
     }
 
     override fun getLoggedHabitIdsForRange(startOfDay: LocalDateTime,endOfDay: LocalDateTime): Flow<List<DailyLogEntity>> {
-        return dailyLogDao.getLoggedHabitIdsForToday(startOfDay,endOfDay)
+        return dailyLogDao.getLoggedHabitIdsForTodayFlow(startOfDay,endOfDay)
     }
 
     override fun getLoggedHabitFromIdForRange(
@@ -160,9 +161,9 @@ class HabitLocalRepositoryImpl(
         return dailyLogDao.getAllLogsForHabitId(habitId)
     }
 
-    override fun getTodayHabits(currentDayOfWeek: DayOfWeek): Flow<List<HabitWithDone>> {
+    override fun getTodayHabitsFlow(currentDayOfWeek: DayOfWeek): Flow<List<HabitWithDone>> {
         return combine(
-            habitDao.getTodayHabits(currentDayOfWeek),
+            habitDao.getTodayHabitsFlow(currentDayOfWeek),
             getLoggedHabitIdsForRange()
         ) { habits, dailyLogs ->
             val logMap = dailyLogs.associateBy { it.habitId }
@@ -176,6 +177,22 @@ class HabitLocalRepositoryImpl(
                 )
             }
         }
+    }
+
+    override fun getTodayHabits(currentDayOfWeek: DayOfWeek): List<HabitWithDone> {
+        val todayHabits = habitDao.getTodayHabits(currentDayOfWeek)
+        val loggedHabits = dailyLogDao.getLoggedHabitIdsForToday(DateUtil.todayStartOfDay(), DateUtil.todayEndOfDay())
+
+        val habitWithDone = todayHabits.map { habit ->
+            val log = loggedHabits.find { it.habitId == habit.id }
+            HabitWithDone(
+                habitEntity = habit,
+                isDone = log != null,
+                logId = log?.id,
+                created = log?.createdAt
+            )
+        }
+        return habitWithDone
     }
 
     override fun getHabitWithIdFlow(id: Long): Flow<HabitEntity> {

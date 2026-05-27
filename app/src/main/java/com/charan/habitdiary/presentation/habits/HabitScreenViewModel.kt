@@ -8,7 +8,6 @@ import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.data.repository.HabitLocalRepository
 import com.charan.habitdiary.presentation.habits.HabitScreenEffect.*
 import com.charan.habitdiary.presentation.mapper.toDailyLogEntity
-import com.charan.habitdiary.presentation.mapper.toDailyLogUIStateList
 import com.charan.habitdiary.presentation.mapper.toHabitUIState
 import com.charan.habitdiary.utils.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -112,7 +111,7 @@ class HabitScreenViewModel @Inject constructor(
                 habitLocalRepository.getActiveHabits()
             }
             HabitSortType.TODAY_HABITS -> {
-                habitLocalRepository.getTodayHabits()
+                habitLocalRepository.getTodayHabitsFlow()
             }
         }
     }

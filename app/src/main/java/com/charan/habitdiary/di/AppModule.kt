@@ -2,6 +2,7 @@ package com.charan.habitdiary.di
 
 import android.content.Context
 import androidx.biometric.BiometricManager
+import com.charan.habitdiary.appfunctions.AppFunctions
 import com.charan.habitdiary.data.local.AppDatabase
 import com.charan.habitdiary.data.local.dao.DailyLogDao
 import com.charan.habitdiary.data.local.dao.DailyLogMediaDao
@@ -112,4 +113,11 @@ class AppModule {
     fun provideWidgetManager(
         @ApplicationContext context : Context
     ) : HabitDiaryWidgetManager = HabitDiaryWidgetManager(context)
+
+
+    @Provides
+    @Singleton
+    fun provideAppFunctions(
+        habitLocalRepository: HabitLocalRepository
+    ) : AppFunctions = AppFunctions(habitLocalRepository)
 }

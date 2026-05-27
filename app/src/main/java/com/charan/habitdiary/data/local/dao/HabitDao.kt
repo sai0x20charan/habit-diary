@@ -29,9 +29,21 @@ interface HabitDao {
     AND habitFrequency LIKE '%' || :currentDayOfWeek || '%'
     ORDER BY habitTime
 """)
-    fun getTodayHabits(
+    fun getTodayHabitsFlow(
         currentDayOfWeek: DayOfWeek
     ): Flow<List<HabitEntity>>
+
+    @Query("""
+    SELECT * FROM habit_entity
+    WHERE isDeleted = 0
+    AND habitFrequency LIKE '%' || :currentDayOfWeek || '%'
+    ORDER BY habitTime
+""")
+    fun getTodayHabits(
+        currentDayOfWeek: DayOfWeek
+    ): List<HabitEntity>
+
+
 
 
 
@@ -46,6 +58,9 @@ interface HabitDao {
 
     @Query("SELECT * FROM habit_entity WHERE isDeleted = 0 ORDER BY habitTime")
     fun getActiveHabitsFlow(): Flow<List<HabitEntity>>
+
+    @Query("SELECT * FROM habit_entity WHERE habitName = :habitName AND isDeleted = 0")
+    fun getHabitByName(habitName: String): HabitEntity?
 
 
 }
