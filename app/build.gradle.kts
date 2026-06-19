@@ -18,7 +18,9 @@ val appName = "Habit Diary"
 android {
     namespace = "com.charan.habitdiary"
     compileSdk {
-        version = release(36)
+        version = release(37) {
+            minorApiLevel = 0
+        }
     }
     androidResources {
         generateLocaleConfig = true
@@ -27,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.charan.habitdiary"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 16
         versionName = "0.11.0"
 

@@ -113,14 +113,14 @@ fun AppRoot(
         dynamicColor = state.dynamicColorsEnabled,
         isSystemFont = state.useSystemFont
     ) {
-        if(state.showChangeLog){
-            ChangeLogBottomSheet {
-                viewModel.onEvent(AppEvents.OnCloseChangeLog)
-            }
-        }
         Surface {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (!shouldShowBiometricLock) {
+                    if(state.showChangeLog){
+                        ChangeLogBottomSheet {
+                            viewModel.onEvent(AppEvents.OnCloseChangeLog)
+                        }
+                    }
                     RootNavigation(
                         onBoardingCompleted = state.isOnBoardingCompleted,
                         deepLinkNavKey = deepLinkStack
