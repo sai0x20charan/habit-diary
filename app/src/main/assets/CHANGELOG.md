@@ -1,5 +1,5 @@
-## Features
+## Bug Fixes & Improvements
 
-* Added changelog feature to display app updates within the app.
-* Swipe gesture support to switch between week and month views.
-* Added “Rate on Google Play” option in Settings.
+* Updated the app to target SDK 37.
+* Fixed changelog visibility on the biometric unlock screen.
+* Updated dependencies to their latest versions.
