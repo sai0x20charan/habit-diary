@@ -28,8 +28,8 @@ class NotificationReceiver : BroadcastReceiver() {
                     IntentActions.SHOW_NOTIFICATION.name -> {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L && appContext != null) {
-                            val habit = habitRepository.getHabitWithId(habitId)
-                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId)
+                            val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
+                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
                             if(habitLog == null){
                                 notificationHelper.showNotification(
                                     title = "Habit Reminder",
@@ -49,8 +49,8 @@ class NotificationReceiver : BroadcastReceiver() {
                     IntentActions.MARK_AS_DONE.name -> {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L) {
-                            val habit = habitRepository.getHabitWithId(habitId)
-                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId)
+                            val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
+                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
                             if(habitLog == null){
                                 habitRepository.upsetDailyLog(
                                     DailyLogEntity(

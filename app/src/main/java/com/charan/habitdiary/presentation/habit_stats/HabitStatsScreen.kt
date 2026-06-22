@@ -38,7 +38,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import com.charan.habitdiary.R
+import com.charan.habitdiary.utils.showToast
 import com.charan.habitdiary.presentation.common.components.BackButton
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.habit_stats.components.CalendarCard
@@ -66,6 +68,7 @@ fun HabitStatsScreen(
 
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val monthCalendarState = rememberCalendarState(
@@ -96,6 +99,9 @@ fun HabitStatsScreen(
                 is HabitStatsEffect.OnNavigateToAddLogScreen -> {
                     onAddLog(effect.logId)
 
+                }
+                is HabitStatsEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
 
                 is HabitStatsEffect.OnNavigateToEditHabitScreen -> {

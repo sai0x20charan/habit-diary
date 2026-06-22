@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.data.repository.HabitRepository
+import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.diary.DiaryEffect.*
 import com.charan.habitdiary.presentation.mapper.toDailyLogUIStateList
 import com.charan.habitdiary.utils.DateUtil.getEndOfDay
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -135,6 +137,8 @@ class DiaryViewModel @Inject constructor(
             val start = date.getStartOfDay()
             val end = date.getEndOfDay()
             val logsFlow = habitRepository.getDailyLogsInRange(start, end, sortType)
+                .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logs"))) } }
+                .map { it.getOrNull() ?: emptyList() }
             logsFlow.map { logs ->
                 logs.toDailyLogUIStateList(is24Hours)
             }
@@ -152,6 +156,8 @@ class DiaryViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { range ->
                     habitRepository.getLoggedDatesInRange(range.first.getStartOfDay(), range.second.getEndOfDay())
+                        .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logged dates"))) } }
+                        .map { it.getOrNull() ?: emptyList() }
                 }
                 .collectLatest { dates ->
                     _state.update { it.copy(datesWithLogs = dates.toSet()) }

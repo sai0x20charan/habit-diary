@@ -11,6 +11,7 @@ import com.charan.habitdiary.data.local.model.HabitWithDone
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.data.repository.HabitRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DayOfWeek
@@ -24,42 +25,41 @@ class HabitRepositoryImpl @Inject constructor(
     private val dailyLogMediaDao: DailyLogMediaDao
 ) : HabitRepository {
 
-    override suspend fun upsetHabit(habit: HabitEntity) : Long {
-        return habitDao.upsetHabit(habit)
-
+    override suspend fun upsetHabit(habit: HabitEntity) : Result<Long> = runCatching {
+        habitDao.upsetHabit(habit)
     }
 
     override suspend fun upsetDailyLog(
         dailyLog: DailyLogEntity,
         mediaEntity : List<DailyLogMediaEntity>
-    ) {
+    ): Result<Unit> = runCatching {
         val id = dailyLogDao.upsetDailyLog(dailyLog)
         if(mediaEntity.isNotEmpty()){
-            val mediaEntity = mediaEntity.map { it.copy(dailyLogId = id) }
-            dailyLogMediaDao.upsertMedia(mediaEntity)
+            val mappedMedia = mediaEntity.map { it.copy(dailyLogId = id) }
+            dailyLogMediaDao.upsertMedia(mappedMedia)
         }
     }
 
-    override fun getAllHabitsFlow(): Flow<List<HabitEntity>> {
-        return habitDao.getAllHabitsFlow()
+    override fun getAllHabitsFlow(): Flow<Result<List<HabitEntity>>> {
+        return habitDao.getAllHabitsFlow().map { Result.success(it) }.catch { emit(Result.failure(it)) }
     }
 
-    override suspend fun getAllHabits(): List<HabitEntity> {
-        return habitDao.getAllHabits()
+    override suspend fun getAllHabits(): Result<List<HabitEntity>> = runCatching {
+        habitDao.getAllHabits()
     }
 
-    override fun getAllDailyLogsFlow(): Flow<List<DailyLogEntity>> {
-        return dailyLogDao.getAllDailyLogsFlow()
+    override fun getAllDailyLogsFlow(): Flow<Result<List<DailyLogEntity>>> {
+        return dailyLogDao.getAllDailyLogsFlow().map { Result.success(it) }.catch { emit(Result.failure(it)) }
     }
-    override suspend fun getAllDailyLogs(): List<DailyLogEntity> {
-        return dailyLogDao.getAllDailyLogs()
+    override suspend fun getAllDailyLogs(): Result<List<DailyLogEntity>> = runCatching {
+        dailyLogDao.getAllDailyLogs()
     }
 
     override fun getDailyLogsInRange(
         startOfDay: LocalDateTime,
         endOfDay: LocalDateTime,
         sortBy : DailyLogSortType
-    ): Flow<List<DailyLogWithHabit>> {
+    ): Flow<Result<List<DailyLogWithHabit>>> {
         return when(sortBy){
             DailyLogSortType.NEWEST_FIRST -> {
                 dailyLogDao
@@ -71,23 +71,24 @@ class HabitRepositoryImpl @Inject constructor(
                     .getDailyLogsInRangeOldestFirst(startOfDay, endOfDay)
             }
         }.map { logs ->
-            logs.map { log ->
+            val mapped = logs.map { log ->
                 log.copy(
                     mediaEntities = log.mediaEntities.filter { !it.isDeleted }
                 )
             }
-        }
+            Result.success(mapped)
+        }.catch { emit(Result.failure(it)) }
     }
 
 
 
-    override fun getActiveHabits(): Flow<List<HabitWithDone>> {
+    override fun getActiveHabits(): Flow<Result<List<HabitWithDone>>> {
         return combine(
             habitDao.getActiveHabitsFlow(),
-            getLoggedHabitIdsForRange()
+            getLoggedHabitIdsForRange().map { it.getOrNull() ?: emptyList() }
         ) { habits, dailyLogs ->
             val logMap = dailyLogs.associateBy { it.habitId }
-            habits.map { habit ->
+            val mapped = habits.map { habit ->
                 val log = logMap[habit.id]
                 HabitWithDone(
                     habitEntity = habit,
@@ -96,78 +97,76 @@ class HabitRepositoryImpl @Inject constructor(
                     created = log?.createdAt
                 )
             }
-        }
-
-
+            Result.success(mapped)
+        }.catch { emit(Result.failure(it)) }
     }
 
 
-    override suspend fun getDailyLogWithId(id: Long): DailyLogEntity {
-        return dailyLogDao.getDailyLogWithId(id)
+    override suspend fun getDailyLogWithId(id: Long): Result<DailyLogEntity> = runCatching {
+        dailyLogDao.getDailyLogWithId(id)
     }
 
-    override suspend fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit {
-        return dailyLogDao.getDailyLogsWithHabitWithId(id)
+    override suspend fun getDailyLogsWithHabitWithId(id: Long): Result<DailyLogWithHabit> = runCatching {
+        dailyLogDao.getDailyLogsWithHabitWithId(id)
     }
 
-    override suspend fun getHabitWithId(id: Long): HabitEntity {
-        return habitDao.getHabitWithId(id)
+    override suspend fun getHabitWithId(id: Long): Result<HabitEntity> = runCatching {
+        habitDao.getHabitWithId(id)
     }
 
-    override suspend fun deleteDailyLog(id: Long) {
+    override suspend fun deleteDailyLog(id: Long): Result<Unit> = runCatching {
         dailyLogDao.deleteDailyLog(id)
-
     }
 
-    override suspend fun deleteHabit(id: Long) {
+    override suspend fun deleteHabit(id: Long): Result<Unit> = runCatching {
         habitDao.deleteHabit(id)
     }
 
-    override fun getLoggedHabitIdsForRange(startOfDay: LocalDateTime,endOfDay: LocalDateTime): Flow<List<DailyLogEntity>> {
-        return dailyLogDao.getLoggedHabitIdsForToday(startOfDay,endOfDay)
+    override fun getLoggedHabitIdsForRange(startOfDay: LocalDateTime,endOfDay: LocalDateTime): Flow<Result<List<DailyLogEntity>>> {
+        return dailyLogDao.getLoggedHabitIdsForToday(startOfDay,endOfDay).map { Result.success(it) }.catch { emit(Result.failure(it)) }
     }
 
     override suspend fun getLoggedHabitFromIdForRange(
         habitId: Long,
         startOfDay: LocalDateTime,
         endOfDay: LocalDateTime
-    ): DailyLogEntity? {
-        return dailyLogDao.getLoggedHabitFromIdForRange(habitId, startOfDay, endOfDay)
+    ): Result<DailyLogEntity?> = runCatching {
+        dailyLogDao.getLoggedHabitFromIdForRange(habitId, startOfDay, endOfDay)
     }
 
-    override suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>) {
+    override suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>): Result<Unit> = runCatching {
         dailyLogMediaDao.upsertMedia(mediaEntity)
     }
 
     override fun getLoggedDatesInRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<List<LocalDate>> {
-        return dailyLogDao.getLoggedDatesInRange(start,end)
+    ): Flow<Result<List<LocalDate>>> {
+        return dailyLogDao.getLoggedDatesInRange(start,end).map { Result.success(it) }.catch { emit(Result.failure(it)) }
     }
 
-    override suspend fun getAllMedia(): List<DailyLogMediaEntity> {
-        return dailyLogMediaDao.getAllMedia()
+    override suspend fun getAllMedia(): Result<List<DailyLogMediaEntity>> = runCatching {
+        dailyLogMediaDao.getAllMedia()
     }
 
-    override suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>): List<Long> {
-        return dailyLogDao.insertDailyLogs(dailyLogs)
+    override suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>): Result<List<Long>> = runCatching {
+        dailyLogDao.insertDailyLogs(dailyLogs)
     }
-    override suspend fun insertHabits(habits: List<HabitEntity>) : List<Long> {
-        return habitDao.insertHabits(habits)
-    }
-
-    override fun getAllLogsWithHabitId(habitId: Long): Flow<List<DailyLogEntity>> {
-        return dailyLogDao.getAllLogsForHabitId(habitId)
+    override suspend fun insertHabits(habits: List<HabitEntity>) : Result<List<Long>> = runCatching {
+        habitDao.insertHabits(habits)
     }
 
-    override fun getTodayHabits(currentDayOfWeek: DayOfWeek): Flow<List<HabitWithDone>> {
+    override fun getAllLogsWithHabitId(habitId: Long): Flow<Result<List<DailyLogEntity>>> {
+        return dailyLogDao.getAllLogsForHabitId(habitId).map { Result.success(it) }.catch { emit(Result.failure(it)) }
+    }
+
+    override fun getTodayHabits(currentDayOfWeek: DayOfWeek): Flow<Result<List<HabitWithDone>>> {
         return combine(
             habitDao.getTodayHabits(currentDayOfWeek),
-            getLoggedHabitIdsForRange()
+            getLoggedHabitIdsForRange().map { it.getOrNull() ?: emptyList() }
         ) { habits, dailyLogs ->
             val logMap = dailyLogs.associateBy { it.habitId }
-            habits.map { habit ->
+            val mapped = habits.map { habit ->
                 val log = logMap[habit.id]
                 HabitWithDone(
                     habitEntity = habit,
@@ -176,10 +175,11 @@ class HabitRepositoryImpl @Inject constructor(
                     created = log?.createdAt
                 )
             }
-        }
+            Result.success(mapped)
+        }.catch { emit(Result.failure(it)) }
     }
 
-    override fun getHabitWithIdFlow(id: Long): Flow<HabitEntity> {
-        return habitDao.getHabitByIdFLow(id)
+    override fun getHabitWithIdFlow(id: Long): Flow<Result<HabitEntity>> {
+        return habitDao.getHabitByIdFLow(id).map { Result.success(it) }.catch { emit(Result.failure(it)) }
     }
 }

@@ -9,6 +9,7 @@ import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.presentation.habits.HabitEffect.*
 import com.charan.habitdiary.presentation.mapper.toDailyLogEntity
 import com.charan.habitdiary.presentation.mapper.toDailyLogUIStateList
+import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.mapper.toHabitUIState
 import com.charan.habitdiary.utils.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -110,9 +112,13 @@ class HabitViewModel @Inject constructor(
         return when (sortType) {
             HabitSortType.ALL_HABITS -> {
                 habitRepository.getActiveHabits()
+                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habits"))) } }
+                    .map { it.getOrNull() ?: emptyList() }
             }
             HabitSortType.TODAY_HABITS -> {
                 habitRepository.getTodayHabits()
+                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habits"))) } }
+                    .map { it.getOrNull() ?: emptyList() }
             }
         }
     }
@@ -155,8 +161,10 @@ class HabitViewModel @Inject constructor(
     private fun onAddHabitClick(habitUI : HabitItemUIModel,isChecked : Boolean) = viewModelScope.launch {
         if (isChecked) {
             habitRepository.upsetDailyLog(habitUI.toDailyLogEntity(DateUtil.getCurrentDateTime()))
+                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error logging habit"))) }
         } else {
             habitRepository.deleteDailyLog(habitUI.logId ?: return@launch)
+                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error removing log"))) }
         }
     }
 

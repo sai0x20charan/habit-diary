@@ -51,9 +51,9 @@ class BackupRepositoryImpl @Inject constructor(
             return Result.failure(Exception("No File Found"))
         }
         return try {
-            val habits = habitRepository.getAllHabits()
-            val dailyLogs = habitRepository.getAllDailyLogs()
-            val media = habitRepository.getAllMedia()
+            val habits = habitRepository.getAllHabits().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+            val dailyLogs = habitRepository.getAllDailyLogs().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+            val media = habitRepository.getAllMedia().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
             val metaData = BackupMetaData(
                 versionCode = BuildConfig.VERSION_CODE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
@@ -180,7 +180,7 @@ class BackupRepositoryImpl @Inject constructor(
             val habitIdMap = mutableMapOf<Long, Long>()
             if (importedHabits.isNotEmpty()) {
                 val insertHabits = importedHabits.map { it.copy(id = 0) }
-                val newIds = habitRepository.insertHabits(insertHabits)
+                val newIds = habitRepository.insertHabits(insertHabits).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
 
                 importedHabits.forEachIndexed { index, oldHabit ->
                     habitIdMap[oldHabit.id] = newIds[index]
@@ -209,7 +209,7 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                val newIds = habitRepository.insertDailyLogs(insertDailyLogs)
+                val newIds = habitRepository.insertDailyLogs(insertDailyLogs).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
 
                 insertDailyLogs.forEachIndexed { index, newLog ->
                     newDailyLogIdMap[importedDailyLogs[index].id] = newIds[index]
@@ -228,7 +228,7 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                habitRepository.upsetDailyLogMediaEntities(finalMediaEntities)
+                habitRepository.upsetDailyLogMediaEntities(finalMediaEntities).onFailure { return Result.failure(it) }
             }
 
             Result.success(true)

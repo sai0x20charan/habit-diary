@@ -1,6 +1,10 @@
 package com.charan.habitdiary.presentation.habit_stats
 
+import com.charan.habitdiary.presentation.common.model.ToastMessage
+
 sealed class HabitStatsEffect {
+    data class ShowToast(val message: ToastMessage) : HabitStatsEffect()
+
     data object OnNavigateBack : HabitStatsEffect()
 
     data object AnimateToNextMonth : HabitStatsEffect()

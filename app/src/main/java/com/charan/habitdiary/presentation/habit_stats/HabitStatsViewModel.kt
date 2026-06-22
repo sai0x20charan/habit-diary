@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.mapper.toDailyLogEntity
 import com.charan.habitdiary.data.repository.HabitRepository
+import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.utils.DateUtil
 import com.charan.habitdiary.utils.getBestHabitStreak
 import com.charan.habitdiary.utils.getHabitStreak
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -82,7 +85,9 @@ class HabitStatsViewModel @AssistedInject constructor(
             habitId = _state.value.habitId,
             startOfDay = _state.value.selectedDate.atTime(LocalTime(0,0)),
             endOfDay = _state.value.selectedDate.atTime(LocalTime(23,59))
-        )
+        ).onFailure { error ->
+            sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to find existing log")))
+        }.getOrNull()
         logId?.let {
             sendEffect(HabitStatsEffect.OnNavigateToAddLogScreen(it.id))
         }
@@ -91,19 +96,27 @@ class HabitStatsViewModel @AssistedInject constructor(
     private fun handleCompleteTask(date : LocalDate) = viewModelScope.launch {
         val habitLogExists = _state.value.datesWithHabitDone.contains(date)
         if (!habitLogExists){
-            val habit = habitRepository.getHabitWithId(_state.value.habitId)
+            val habit = habitRepository.getHabitWithId(_state.value.habitId).onFailure { error ->
+                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load habit details")))
+            }.getOrNull() ?: return@launch
             val createdTime = date.atTime(DateUtil.getCurrentTime())
             habitRepository.upsetDailyLog(
                 habit.toDailyLogEntity(date = createdTime)
-            )
+            ).onFailure { error ->
+                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to log habit")))
+            }
         } else{
             val existingLog = habitRepository.getLoggedHabitFromIdForRange(
                 habitId = _state.value.habitId,
                 startOfDay = date.atTime(LocalTime(0,0)),
                 endOfDay = date.atTime(LocalTime(23,59))
-            )
+            ).onFailure { error ->
+                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to check existing logs")))
+            }.getOrNull()
             existingLog?.let {
-                habitRepository.deleteDailyLog(it.id)
+                habitRepository.deleteDailyLog(it.id).onFailure { error ->
+                    sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to delete log")))
+                }
             }
         }
     }
@@ -119,11 +132,16 @@ class HabitStatsViewModel @AssistedInject constructor(
 
     private fun observeHabitStats() = viewModelScope.launch {
         combine(
-            habitRepository.getHabitWithIdFlow(habitId),
+            habitRepository.getHabitWithIdFlow(habitId)
+                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habit"))) } }
+                .map { it.getOrNull() },
             habitRepository.getAllLogsWithHabitId(habitId)
+                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe logs"))) } }
+                .map { it.getOrNull() ?: emptyList() }
         ) { habit, logs ->
             habit to logs
         }.collectLatest { (habit, logs) ->
+            if (habit == null) return@collectLatest
 
             _state.update { state ->
                 state.copy(

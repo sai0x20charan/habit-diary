@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.data.repository.HabitRepository
-import com.charan.habitdiary.notification.NotificationScheduler
 import com.charan.habitdiary.presentation.mapper.toHabitEntity
+import com.charan.habitdiary.notification.NotificationScheduler
+import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.utils.DateUtil.toFormattedString
 import com.charan.habitdiary.utils.PermissionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -115,11 +116,12 @@ class AddHabitViewModel @Inject constructor(
     private fun deleteHabit() = viewModelScope.launch {
         habitRepository.deleteHabit(
             _state.value.habitId ?: return@launch
-        )
-        _state.update {
-            it.copy(showDeleteDialog = false)
+        ).onSuccess {
+            _state.update { it.copy(showDeleteDialog = false) }
+            sendEffect(AddHabitEffect.OnNavigateBack(true))
+        }.onFailure { error ->
+            sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error deleting habit")))
         }
-        sendEffect(AddHabitEffect.OnNavigateBack(true))
     }
 
     private fun togglePermissionRationale(showRationale: Boolean) {
@@ -155,7 +157,9 @@ class AddHabitViewModel @Inject constructor(
 
     private fun initializeHabit(habitId : Long?) = viewModelScope.launch{
         if(habitId!=null){
-            val habit = habitRepository.getHabitWithId(habitId)
+            val habit = habitRepository.getHabitWithId(habitId).onFailure { error ->
+                sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load habit")))
+            }.getOrNull() ?: return@launch
             val habitTime = habit.habitTime
             val reminderTime = habit.habitReminder
             _state.update {
@@ -203,14 +207,17 @@ class AddHabitViewModel @Inject constructor(
 
 
     private fun saveHabit() = viewModelScope.launch {
-        val id = habitRepository.upsetHabit(_state.value.toHabitEntity())
-        notificationScheduler.scheduleReminder(
-            habitId = id,
-            time = _state.value.habitReminderTime ?: LocalTime(8,0),
-            isReminderEnabled = _state.value.isReminderEnabled,
-            frequency = _state.value.habitFrequency,
-        )
-        sendEffect(AddHabitEffect.OnNavigateBack())
+        habitRepository.upsetHabit(_state.value.toHabitEntity()).onSuccess { id ->
+            notificationScheduler.scheduleReminder(
+                habitId = id,
+                time = _state.value.habitReminderTime ?: LocalTime(8,0),
+                isReminderEnabled = _state.value.isReminderEnabled,
+                frequency = _state.value.habitFrequency,
+            )
+            sendEffect(AddHabitEffect.OnNavigateBack())
+        }.onFailure { error ->
+            sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error saving habit")))
+        }
     }
 
     private fun observeTimeChanges() = viewModelScope.launch{

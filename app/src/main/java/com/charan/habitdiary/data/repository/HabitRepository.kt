@@ -14,67 +14,67 @@ import kotlinx.datetime.LocalDateTime
 
 interface HabitRepository {
 
-    suspend fun upsetHabit(habit: HabitEntity): Long
+    suspend fun upsetHabit(habit: HabitEntity): Result<Long>
 
     suspend fun upsetDailyLog(
         dailyLog: DailyLogEntity,
         mediaEntity: List<DailyLogMediaEntity> = emptyList()
-    )
+    ): Result<Unit>
 
-    fun getAllHabitsFlow(): Flow<List<HabitEntity>>
+    fun getAllHabitsFlow(): Flow<Result<List<HabitEntity>>>
 
-    suspend fun getAllHabits(): List<HabitEntity>
+    suspend fun getAllHabits(): Result<List<HabitEntity>>
 
-    fun getAllDailyLogsFlow(): Flow<List<DailyLogEntity>>
+    fun getAllDailyLogsFlow(): Flow<Result<List<DailyLogEntity>>>
 
-    suspend fun getAllDailyLogs(): List<DailyLogEntity>
+    suspend fun getAllDailyLogs(): Result<List<DailyLogEntity>>
 
     fun getDailyLogsInRange(
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
         endOfDay: LocalDateTime = DateUtil.todayEndOfDay(),
         sortBy: DailyLogSortType = DailyLogSortType.NEWEST_FIRST
-    ): Flow<List<DailyLogWithHabit>>
+    ): Flow<Result<List<DailyLogWithHabit>>>
 
-    fun getActiveHabits(): Flow<List<HabitWithDone>>
+    fun getActiveHabits(): Flow<Result<List<HabitWithDone>>>
 
-    suspend fun getDailyLogWithId(id: Long): DailyLogEntity
+    suspend fun getDailyLogWithId(id: Long): Result<DailyLogEntity>
 
-    suspend fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit
+    suspend fun getDailyLogsWithHabitWithId(id: Long): Result<DailyLogWithHabit>
 
-    suspend fun getHabitWithId(id: Long): HabitEntity
+    suspend fun getHabitWithId(id: Long): Result<HabitEntity>
 
-    suspend fun deleteDailyLog(id: Long)
+    suspend fun deleteDailyLog(id: Long): Result<Unit>
 
-    suspend fun deleteHabit(id: Long)
+    suspend fun deleteHabit(id: Long): Result<Unit>
 
     fun getLoggedHabitIdsForRange(
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
         endOfDay: LocalDateTime = DateUtil.todayEndOfDay()
-    ): Flow<List<DailyLogEntity>>
+    ): Flow<Result<List<DailyLogEntity>>>
 
     suspend fun getLoggedHabitFromIdForRange(
         habitId: Long,
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
         endOfDay: LocalDateTime = DateUtil.todayEndOfDay()
-    ): DailyLogEntity?
+    ): Result<DailyLogEntity?>
 
 
-    suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>)
+    suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>): Result<Unit>
 
-    suspend fun getAllMedia() : List<DailyLogMediaEntity>
+    suspend fun getAllMedia() : Result<List<DailyLogMediaEntity>>
 
-    suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>) : List<Long>
+    suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>) : Result<List<Long>>
 
-    suspend fun insertHabits(habits: List<HabitEntity>) : List<Long>
+    suspend fun insertHabits(habits: List<HabitEntity>) : Result<List<Long>>
 
     fun getLoggedDatesInRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<List<LocalDate>>
+    ): Flow<Result<List<LocalDate>>>
 
-    fun getAllLogsWithHabitId(habitId: Long): Flow<List<DailyLogEntity>>
+    fun getAllLogsWithHabitId(habitId: Long): Flow<Result<List<DailyLogEntity>>>
 
-    fun getTodayHabits(currentDayOfWeek: DayOfWeek = DateUtil.getCurrentDayOfWeek()): Flow<List<HabitWithDone>>
+    fun getTodayHabits(currentDayOfWeek: DayOfWeek = DateUtil.getCurrentDayOfWeek()): Flow<Result<List<HabitWithDone>>>
 
-    fun getHabitWithIdFlow(id: Long): Flow<HabitEntity>
+    fun getHabitWithIdFlow(id: Long): Flow<Result<HabitEntity>>
 }

@@ -25,7 +25,9 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import com.charan.habitdiary.R
+import com.charan.habitdiary.utils.showToast
 import com.charan.habitdiary.presentation.common.components.CustomDropDown
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.components.SectionHeading
@@ -48,6 +50,7 @@ fun HabitScreen(
     ) {
     val viewModel = hiltViewModel<HabitViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -63,6 +66,9 @@ fun HabitScreen(
 
                 is HabitEffect.OnNavigateToHabitStatsScreen -> {
                     onHabitStats(effect.habitId)
+                }
+                is HabitEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
             }
         }

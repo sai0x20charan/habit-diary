@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import com.charan.habitdiary.utils.showToast
 import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
@@ -74,6 +76,7 @@ fun DiaryScreen(
 ) {
     val viewModel = hiltViewModel<DiaryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scaffoldNavigator = rememberSupportingPaneScaffoldNavigator()
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -153,6 +156,9 @@ fun DiaryScreen(
 
                 is DiaryEffect.OnNavigateToAddDailyLogScreen -> {
                     onNavigateToDailyLogScreen(effect.id, state.selectedDate)
+                }
+                is DiaryEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
 
                 else -> {}

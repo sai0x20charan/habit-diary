@@ -20,7 +20,7 @@ class BootBroadcastReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch{
             if(intent?.action == Intent.ACTION_BOOT_COMPLETED){
                 try {
-                    val habits = habitRepository.getAllHabits()
+                    val habits = habitRepository.getAllHabits().getOrNull() ?: emptyList()
                     for (habit in habits) {
                         notificationScheduler.scheduleReminder(
                             habitId = habit.id,

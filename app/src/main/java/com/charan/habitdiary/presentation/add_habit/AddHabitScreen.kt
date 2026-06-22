@@ -32,6 +32,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.flow.collectLatest
+import com.charan.habitdiary.utils.showToast
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalPermissionsApi::class
@@ -43,6 +45,7 @@ fun AddHabitScreen(
 ) {
     val viewModel = hiltViewModel<AddHabitViewModel>()
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val notificationPermissionState = rememberPermissionState(
         permission = Manifest.permission.POST_NOTIFICATIONS
@@ -58,6 +61,9 @@ fun AddHabitScreen(
                 is AddHabitEffect.OnNavigateBack -> {
                     onNavigateBack(effect.isHabitDeleted)
 
+                }
+                is AddHabitEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
                 AddHabitEffect.RequestNotificationPermission -> {
                     if(notificationPermissionState.status.shouldShowRationale){

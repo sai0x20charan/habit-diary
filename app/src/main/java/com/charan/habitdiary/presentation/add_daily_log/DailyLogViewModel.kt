@@ -240,7 +240,9 @@ class DailyLogViewModel @AssistedInject constructor(
 
     private fun initializeLog(logId: Long?) = viewModelScope.launch {
         if (logId != null) {
-            val log = habitRepository.getDailyLogsWithHabitWithId(logId)
+            val log = habitRepository.getDailyLogsWithHabitWithId(logId).onFailure { error ->
+                sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load log details")))
+            }.getOrNull() ?: return@launch
             _state.update {
                 it.copy(
                     dailyLogItemDetails = log.toDailyLogItemDetails(),
@@ -389,7 +391,9 @@ class DailyLogViewModel @AssistedInject constructor(
             uris
                 .map { uri ->
                     async {
-                        fileRepository.saveImagesToCache(uri).getOrNull()
+                        fileRepository.saveImagesToCache(uri).onFailure { error ->
+                            sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to cache image")))
+                        }.getOrNull()
                     }
                 }
                 .awaitAll()
