@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.local.model.HabitWithDone
 import com.charan.habitdiary.data.model.enums.HabitSortType
 import com.charan.habitdiary.data.repository.DataStoreRepository
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.presentation.habits.HabitEffect.*
 import com.charan.habitdiary.presentation.mapper.toDailyLogEntity
@@ -33,8 +34,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HabitViewModel @Inject constructor(
     private val habitRepository: HabitRepository,
+    private val diaryRepository: DiaryRepository,
     private val dataStoreRepo : DataStoreRepository
-
 ): ViewModel() {
     private val _state = MutableStateFlow(HabitState())
     val state = _state.asStateFlow()
@@ -160,10 +161,10 @@ class HabitViewModel @Inject constructor(
 
     private fun onAddHabitClick(habitUI : HabitItemUIModel,isChecked : Boolean) = viewModelScope.launch {
         if (isChecked) {
-            habitRepository.upsetDailyLog(habitUI.toDailyLogEntity(DateUtil.getCurrentDateTime()))
+            diaryRepository.upsetDailyLog(habitUI.toDailyLogEntity(DateUtil.getCurrentDateTime()))
                 .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error logging habit"))) }
         } else {
-            habitRepository.deleteDailyLog(habitUI.logId ?: return@launch)
+            diaryRepository.deleteDailyLog(habitUI.logId ?: return@launch)
                 .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error removing log"))) }
         }
     }

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.data.repository.DataStoreRepository
-import com.charan.habitdiary.data.repository.HabitRepository
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.diary.DiaryEffect.*
 import com.charan.habitdiary.presentation.mapper.toDailyLogUIStateList
@@ -31,7 +31,7 @@ import kotlin.time.ExperimentalTime
 
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
-    private val habitRepository: HabitRepository,
+    private val diaryRepository: DiaryRepository,
     private val dataStoreRepo: DataStoreRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(DiaryState())
@@ -136,7 +136,7 @@ class DiaryViewModel @Inject constructor(
         ) { date, sortType, is24Hours ->
             val start = date.getStartOfDay()
             val end = date.getEndOfDay()
-            val logsFlow = habitRepository.getDailyLogsInRange(start, end, sortType)
+            val logsFlow = diaryRepository.getDailyLogsInRange(start, end, sortType)
                 .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logs"))) } }
                 .map { it.getOrNull() ?: emptyList() }
             logsFlow.map { logs ->
@@ -155,7 +155,7 @@ class DiaryViewModel @Inject constructor(
                 .map { it.visibleStartOfDate to it.visibleEndOfDate }
                 .distinctUntilChanged()
                 .flatMapLatest { range ->
-                    habitRepository.getLoggedDatesInRange(range.first.getStartOfDay(), range.second.getEndOfDay())
+                    diaryRepository.getLoggedDatesInRange(range.first.getStartOfDay(), range.second.getEndOfDay())
                         .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logged dates"))) } }
                         .map { it.getOrNull() ?: emptyList() }
                 }

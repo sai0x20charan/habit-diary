@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.utils.DateUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,6 +17,7 @@ import javax.inject.Inject
 class NotificationReceiver : BroadcastReceiver() {
     @Inject lateinit var notificationHelper: NotificationHelper
     @Inject lateinit var habitRepository: HabitRepository
+    @Inject lateinit var diaryRepository: DiaryRepository
 
     @Inject lateinit var notificationScheduler: NotificationScheduler
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -29,7 +31,7 @@ class NotificationReceiver : BroadcastReceiver() {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L && appContext != null) {
                             val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
-                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
+                            val habitLog = diaryRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
                             if(habitLog == null){
                                 notificationHelper.showNotification(
                                     title = "Habit Reminder",
@@ -50,9 +52,9 @@ class NotificationReceiver : BroadcastReceiver() {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L) {
                             val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
-                            val habitLog = habitRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
+                            val habitLog = diaryRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
                             if(habitLog == null){
-                                habitRepository.upsetDailyLog(
+                                diaryRepository.upsetDailyLog(
                                     DailyLogEntity(
                                         logNote = "",
                                         imagePath = "",

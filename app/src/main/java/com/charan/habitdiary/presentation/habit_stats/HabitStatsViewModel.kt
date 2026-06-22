@@ -3,6 +3,7 @@ package com.charan.habitdiary.presentation.habit_stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.data.mapper.toDailyLogEntity
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.utils.DateUtil
@@ -30,8 +31,8 @@ import kotlinx.datetime.atTime
 @HiltViewModel(assistedFactory = HabitStatsViewModel.Factory::class)
 class HabitStatsViewModel @AssistedInject constructor(
     @Assisted val habitId : Long,
-    private val habitRepository: HabitRepository
-
+    private val habitRepository: HabitRepository,
+    private val diaryRepository: DiaryRepository
 ) : ViewModel() {
 
     @AssistedFactory
@@ -81,7 +82,7 @@ class HabitStatsViewModel @AssistedInject constructor(
     }
 
     private fun handleAddLog() = viewModelScope.launch {
-        val logId = habitRepository.getLoggedHabitFromIdForRange(
+        val logId = diaryRepository.getLoggedHabitFromIdForRange(
             habitId = _state.value.habitId,
             startOfDay = _state.value.selectedDate.atTime(LocalTime(0,0)),
             endOfDay = _state.value.selectedDate.atTime(LocalTime(23,59))
@@ -100,13 +101,13 @@ class HabitStatsViewModel @AssistedInject constructor(
                 sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load habit details")))
             }.getOrNull() ?: return@launch
             val createdTime = date.atTime(DateUtil.getCurrentTime())
-            habitRepository.upsetDailyLog(
+            diaryRepository.upsetDailyLog(
                 habit.toDailyLogEntity(date = createdTime)
             ).onFailure { error ->
                 sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to log habit")))
             }
         } else{
-            val existingLog = habitRepository.getLoggedHabitFromIdForRange(
+            val existingLog = diaryRepository.getLoggedHabitFromIdForRange(
                 habitId = _state.value.habitId,
                 startOfDay = date.atTime(LocalTime(0,0)),
                 endOfDay = date.atTime(LocalTime(23,59))
@@ -114,7 +115,7 @@ class HabitStatsViewModel @AssistedInject constructor(
                 sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to check existing logs")))
             }.getOrNull()
             existingLog?.let {
-                habitRepository.deleteDailyLog(it.id).onFailure { error ->
+                diaryRepository.deleteDailyLog(it.id).onFailure { error ->
                     sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to delete log")))
                 }
             }
@@ -135,7 +136,7 @@ class HabitStatsViewModel @AssistedInject constructor(
             habitRepository.getHabitWithIdFlow(habitId)
                 .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habit"))) } }
                 .map { it.getOrNull() },
-            habitRepository.getAllLogsWithHabitId(habitId)
+            diaryRepository.getAllLogsWithHabitId(habitId)
                 .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe logs"))) } }
                 .map { it.getOrNull() ?: emptyList() }
         ) { habit, logs ->

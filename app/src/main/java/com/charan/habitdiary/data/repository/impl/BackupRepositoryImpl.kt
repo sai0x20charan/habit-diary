@@ -9,6 +9,7 @@ import com.charan.habitdiary.data.local.entity.DailyLogMediaEntity
 import com.charan.habitdiary.data.local.entity.HabitEntity
 import com.charan.habitdiary.data.local.model.BackupMetaData
 import com.charan.habitdiary.data.repository.BackupRepository
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.FileRepository
 import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.HABIT_DIARY_IMAGES
@@ -30,6 +31,7 @@ import javax.inject.Inject
 class BackupRepositoryImpl @Inject constructor(
     @ApplicationContext private val context : Context,
     private val habitRepository: HabitRepository,
+    private val diaryRepository: DiaryRepository,
     private val notificationScheduler: NotificationScheduler
 ) : BackupRepository{
     companion object{
@@ -52,8 +54,8 @@ class BackupRepositoryImpl @Inject constructor(
         }
         return try {
             val habits = habitRepository.getAllHabits().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
-            val dailyLogs = habitRepository.getAllDailyLogs().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
-            val media = habitRepository.getAllMedia().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+            val dailyLogs = diaryRepository.getAllDailyLogs().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+            val media = diaryRepository.getAllMedia().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
             val metaData = BackupMetaData(
                 versionCode = BuildConfig.VERSION_CODE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
@@ -209,7 +211,7 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                val newIds = habitRepository.insertDailyLogs(insertDailyLogs).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+                val newIds = diaryRepository.insertDailyLogs(insertDailyLogs).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
 
                 insertDailyLogs.forEachIndexed { index, newLog ->
                     newDailyLogIdMap[importedDailyLogs[index].id] = newIds[index]
@@ -228,7 +230,7 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                habitRepository.upsetDailyLogMediaEntities(finalMediaEntities).onFailure { return Result.failure(it) }
+                diaryRepository.upsetDailyLogMediaEntities(finalMediaEntities).onFailure { return Result.failure(it) }
             }
 
             Result.success(true)
