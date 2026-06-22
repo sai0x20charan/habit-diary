@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -124,46 +125,22 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun observeSettingsDataStore() {
-        viewModelScope.launch {
-            dataStore.getSystemFontState.collect { systemFontState ->
-                _state.update {
-                    it.copy(isSystemFontEnabled = systemFontState)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getIs24HourFormat.collect { is24HourFormat ->
-                _state.update {
-                    it.copy(is24HourFormat = is24HourFormat)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getTheme.collect { themeOption ->
-                _state.update {
-                    it.copy(selectedThemeOption = themeOption)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getDynamicColorsState.collect { isEnabled ->
-                _state.update {
-                    it.copy(isDynamicColorsEnabled = isEnabled)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getBiometricLockEnabled.collect { isEnabled ->
-                _state.update {
-                    it.copy(isBiometricLockEnabled = isEnabled)
-                }
-            }
-        }
+    private fun observeSettingsDataStore() = viewModelScope.launch {
+        combine(
+            dataStore.getSystemFontState,
+            dataStore.getIs24HourFormat,
+            dataStore.getTheme,
+            dataStore.getDynamicColorsState,
+            dataStore.getBiometricLockEnabled
+        ) { font, time, theme, dynamic, biometric ->
+            _state.update { it.copy(
+                isSystemFontEnabled = font,
+                is24HourFormat = time,
+                selectedThemeOption = theme,
+                isDynamicColorsEnabled = dynamic,
+                isBiometricLockEnabled = biometric
+            )}
+        }.collect {}
     }
 
 
