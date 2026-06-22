@@ -24,12 +24,12 @@ class HabitRepositoryImpl @Inject constructor(
     private val dailyLogMediaDao: DailyLogMediaDao
 ) : HabitRepository {
 
-    override fun upsetHabit(habit: HabitEntity) : Long {
+    override suspend fun upsetHabit(habit: HabitEntity) : Long {
         return habitDao.upsetHabit(habit)
 
     }
 
-    override fun upsetDailyLog(
+    override suspend fun upsetDailyLog(
         dailyLog: DailyLogEntity,
         mediaEntity : List<DailyLogMediaEntity>
     ) {
@@ -44,14 +44,14 @@ class HabitRepositoryImpl @Inject constructor(
         return habitDao.getAllHabitsFlow()
     }
 
-    override fun getAllHabits(): List<HabitEntity> {
+    override suspend fun getAllHabits(): List<HabitEntity> {
         return habitDao.getAllHabits()
     }
 
     override fun getAllDailyLogsFlow(): Flow<List<DailyLogEntity>> {
         return dailyLogDao.getAllDailyLogsFlow()
     }
-    override fun getAllDailyLogs(): List<DailyLogEntity> {
+    override suspend fun getAllDailyLogs(): List<DailyLogEntity> {
         return dailyLogDao.getAllDailyLogs()
     }
 
@@ -102,24 +102,24 @@ class HabitRepositoryImpl @Inject constructor(
     }
 
 
-    override fun getDailyLogWithId(id: Long): DailyLogEntity {
+    override suspend fun getDailyLogWithId(id: Long): DailyLogEntity {
         return dailyLogDao.getDailyLogWithId(id)
     }
 
-    override fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit {
+    override suspend fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit {
         return dailyLogDao.getDailyLogsWithHabitWithId(id)
     }
 
-    override fun getHabitWithId(id: Long): HabitEntity {
+    override suspend fun getHabitWithId(id: Long): HabitEntity {
         return habitDao.getHabitWithId(id)
     }
 
-    override fun deleteDailyLog(id: Long) {
+    override suspend fun deleteDailyLog(id: Long) {
         dailyLogDao.deleteDailyLog(id)
 
     }
 
-    override fun deleteHabit(id: Long) {
+    override suspend fun deleteHabit(id: Long) {
         habitDao.deleteHabit(id)
     }
 
@@ -127,7 +127,7 @@ class HabitRepositoryImpl @Inject constructor(
         return dailyLogDao.getLoggedHabitIdsForToday(startOfDay,endOfDay)
     }
 
-    override fun getLoggedHabitFromIdForRange(
+    override suspend fun getLoggedHabitFromIdForRange(
         habitId: Long,
         startOfDay: LocalDateTime,
         endOfDay: LocalDateTime
@@ -135,7 +135,7 @@ class HabitRepositoryImpl @Inject constructor(
         return dailyLogDao.getLoggedHabitFromIdForRange(habitId, startOfDay, endOfDay)
     }
 
-    override fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>) {
+    override suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>) {
         dailyLogMediaDao.upsertMedia(mediaEntity)
     }
 
@@ -146,14 +146,14 @@ class HabitRepositoryImpl @Inject constructor(
         return dailyLogDao.getLoggedDatesInRange(start,end)
     }
 
-    override fun getAllMedia(): List<DailyLogMediaEntity> {
+    override suspend fun getAllMedia(): List<DailyLogMediaEntity> {
         return dailyLogMediaDao.getAllMedia()
     }
 
-    override fun insertDailyLogs(dailyLogs: List<DailyLogEntity>): List<Long> {
+    override suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>): List<Long> {
         return dailyLogDao.insertDailyLogs(dailyLogs)
     }
-    override fun insertHabits(habits: List<HabitEntity>) : List<Long> {
+    override suspend fun insertHabits(habits: List<HabitEntity>) : List<Long> {
         return habitDao.insertHabits(habits)
     }
 

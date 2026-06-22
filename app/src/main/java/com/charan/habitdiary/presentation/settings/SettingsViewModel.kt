@@ -229,7 +229,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun backupData(uri: Uri) = viewModelScope.launch(Dispatchers.IO) {
+    private fun backupData(uri: Uri) = viewModelScope.launch {
         _state.update {
             it.copy(isExporting = true)
         }
@@ -244,7 +244,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun importData(uri: Uri) = viewModelScope.launch(Dispatchers.IO) {
+    private fun importData(uri: Uri) = viewModelScope.launch {
         _state.update {
             it.copy(isImporting = true)
         }

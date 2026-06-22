@@ -77,7 +77,7 @@ class HabitStatsViewModel @AssistedInject constructor(
 
     }
 
-    private fun handleAddLog() = viewModelScope.launch(Dispatchers.IO) {
+    private fun handleAddLog() = viewModelScope.launch {
         val logId = habitRepository.getLoggedHabitFromIdForRange(
             habitId = _state.value.habitId,
             startOfDay = _state.value.selectedDate.atTime(LocalTime(0,0)),
@@ -88,7 +88,7 @@ class HabitStatsViewModel @AssistedInject constructor(
         }
     }
 
-    private fun handleCompleteTask(date : LocalDate) = viewModelScope.launch(Dispatchers.IO) {
+    private fun handleCompleteTask(date : LocalDate) = viewModelScope.launch {
         val habitLogExists = _state.value.datesWithHabitDone.contains(date)
         if (!habitLogExists){
             val habit = habitRepository.getHabitWithId(_state.value.habitId)
@@ -117,7 +117,7 @@ class HabitStatsViewModel @AssistedInject constructor(
 
     }
 
-    private fun observeHabitStats() = viewModelScope.launch(Dispatchers.IO) {
+    private fun observeHabitStats() = viewModelScope.launch {
         combine(
             habitRepository.getHabitWithIdFlow(habitId),
             habitRepository.getAllLogsWithHabitId(habitId)

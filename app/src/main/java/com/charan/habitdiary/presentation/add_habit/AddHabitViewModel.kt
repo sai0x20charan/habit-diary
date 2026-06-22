@@ -112,7 +112,7 @@ class AddHabitViewModel @Inject constructor(
         _state.update { it.copy(showDeleteDialog = show) }
     }
 
-    private fun deleteHabit() = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteHabit() = viewModelScope.launch {
         habitRepository.deleteHabit(
             _state.value.habitId ?: return@launch
         )
@@ -153,7 +153,7 @@ class AddHabitViewModel @Inject constructor(
         }
     }
 
-    private fun initializeHabit(habitId : Long?) = viewModelScope.launch(Dispatchers.IO){
+    private fun initializeHabit(habitId : Long?) = viewModelScope.launch{
         if(habitId!=null){
             val habit = habitRepository.getHabitWithId(habitId)
             val habitTime = habit.habitTime
@@ -202,7 +202,7 @@ class AddHabitViewModel @Inject constructor(
     }
 
 
-    private fun saveHabit() = viewModelScope.launch(Dispatchers.IO) {
+    private fun saveHabit() = viewModelScope.launch {
         val id = habitRepository.upsetHabit(_state.value.toHabitEntity())
         notificationScheduler.scheduleReminder(
             habitId = id,
@@ -213,7 +213,7 @@ class AddHabitViewModel @Inject constructor(
         sendEffect(AddHabitEffect.OnNavigateBack())
     }
 
-    private fun observeTimeChanges() = viewModelScope.launch(Dispatchers.IO){
+    private fun observeTimeChanges() = viewModelScope.launch{
         _state
             .map { Triple(it.habitTime, it.habitReminderTime, it.is24HourFormat) }
             .distinctUntilChanged()
@@ -233,7 +233,7 @@ class AddHabitViewModel @Inject constructor(
         _effect.emit(effect)
     }
 
-    private fun observeIs24HourFormat() = viewModelScope.launch(Dispatchers.IO) {
+    private fun observeIs24HourFormat() = viewModelScope.launch {
         dataStore.getIs24HourFormat.collectLatest { is24HourFormat ->
             _state.update {
                 it.copy(

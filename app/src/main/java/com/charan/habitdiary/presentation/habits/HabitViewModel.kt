@@ -101,7 +101,7 @@ class HabitViewModel @Inject constructor(
         }
     }
 
-    private fun handleSortTypeChange(sortType : HabitSortType) = viewModelScope.launch(Dispatchers.IO) {
+    private fun handleSortTypeChange(sortType : HabitSortType) = viewModelScope.launch {
         dataStoreRepo.setHabitSortType(sortType)
         toggleSortDropDown()
 
@@ -119,7 +119,7 @@ class HabitViewModel @Inject constructor(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getHabits() = viewModelScope.launch(Dispatchers.IO) {
+    private fun getHabits() = viewModelScope.launch {
         combine(
             _state.map { it.habitSortType }.flatMapLatest {
                 observeHabits(it)
@@ -152,7 +152,7 @@ class HabitViewModel @Inject constructor(
         _effect.emit(effect)
     }
 
-    private fun onAddHabitClick(habitUI : HabitItemUIModel,isChecked : Boolean) = viewModelScope.launch(Dispatchers.IO) {
+    private fun onAddHabitClick(habitUI : HabitItemUIModel,isChecked : Boolean) = viewModelScope.launch {
         if (isChecked) {
             habitRepository.upsetDailyLog(habitUI.toDailyLogEntity(DateUtil.getCurrentDateTime()))
         } else {
@@ -160,7 +160,7 @@ class HabitViewModel @Inject constructor(
         }
     }
 
-    private fun observeHabitSortType() = viewModelScope.launch(Dispatchers.IO) {
+    private fun observeHabitSortType() = viewModelScope.launch {
         dataStoreRepo.habitSortType.collectLatest { sortType ->
             _state.update {
                 it.copy(
@@ -169,7 +169,7 @@ class HabitViewModel @Inject constructor(
             }
         }
     }
-    private fun observeIs24HourFormat() = viewModelScope.launch(Dispatchers.IO) {
+    private fun observeIs24HourFormat() = viewModelScope.launch {
         dataStoreRepo.getIs24HourFormat.collectLatest { is24HourFormat ->
             _state.update {
                 it.copy(

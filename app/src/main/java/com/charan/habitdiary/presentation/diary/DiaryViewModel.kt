@@ -126,7 +126,7 @@ class DiaryViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
-    private fun fetchDailyLogsForDate() = viewModelScope.launch(Dispatchers.IO) {
+    private fun fetchDailyLogsForDate() = viewModelScope.launch {
         combine(
             _state.map { it.selectedDate }.distinctUntilChanged(),
             _state.map { it.sortType }.distinctUntilChanged(),
@@ -146,7 +146,7 @@ class DiaryViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun getLoggedDatesInRange() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state
                 .map { it.visibleStartOfDate to it.visibleEndOfDate }
                 .distinctUntilChanged()

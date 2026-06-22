@@ -14,20 +14,20 @@ import kotlinx.datetime.LocalDateTime
 
 interface HabitRepository {
 
-    fun upsetHabit(habit: HabitEntity): Long
+    suspend fun upsetHabit(habit: HabitEntity): Long
 
-    fun upsetDailyLog(
+    suspend fun upsetDailyLog(
         dailyLog: DailyLogEntity,
         mediaEntity: List<DailyLogMediaEntity> = emptyList()
     )
 
     fun getAllHabitsFlow(): Flow<List<HabitEntity>>
 
-    fun getAllHabits(): List<HabitEntity>
+    suspend fun getAllHabits(): List<HabitEntity>
 
     fun getAllDailyLogsFlow(): Flow<List<DailyLogEntity>>
 
-    fun getAllDailyLogs(): List<DailyLogEntity>
+    suspend fun getAllDailyLogs(): List<DailyLogEntity>
 
     fun getDailyLogsInRange(
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
@@ -37,35 +37,35 @@ interface HabitRepository {
 
     fun getActiveHabits(): Flow<List<HabitWithDone>>
 
-    fun getDailyLogWithId(id: Long): DailyLogEntity
+    suspend fun getDailyLogWithId(id: Long): DailyLogEntity
 
-    fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit
+    suspend fun getDailyLogsWithHabitWithId(id: Long): DailyLogWithHabit
 
-    fun getHabitWithId(id: Long): HabitEntity
+    suspend fun getHabitWithId(id: Long): HabitEntity
 
-    fun deleteDailyLog(id: Long)
+    suspend fun deleteDailyLog(id: Long)
 
-    fun deleteHabit(id: Long)
+    suspend fun deleteHabit(id: Long)
 
     fun getLoggedHabitIdsForRange(
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
         endOfDay: LocalDateTime = DateUtil.todayEndOfDay()
     ): Flow<List<DailyLogEntity>>
 
-    fun getLoggedHabitFromIdForRange(
+    suspend fun getLoggedHabitFromIdForRange(
         habitId: Long,
         startOfDay: LocalDateTime = DateUtil.todayStartOfDay(),
         endOfDay: LocalDateTime = DateUtil.todayEndOfDay()
     ): DailyLogEntity?
 
 
-    fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>)
+    suspend fun upsetDailyLogMediaEntities(mediaEntity: List<DailyLogMediaEntity>)
 
-    fun getAllMedia() : List<DailyLogMediaEntity>
+    suspend fun getAllMedia() : List<DailyLogMediaEntity>
 
-    fun insertDailyLogs(dailyLogs: List<DailyLogEntity>) : List<Long>
+    suspend fun insertDailyLogs(dailyLogs: List<DailyLogEntity>) : List<Long>
 
-    fun insertHabits(habits: List<HabitEntity>) : List<Long>
+    suspend fun insertHabits(habits: List<HabitEntity>) : List<Long>
 
     fun getLoggedDatesInRange(
         start: LocalDateTime,

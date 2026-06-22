@@ -238,7 +238,7 @@ class DailyLogViewModel @AssistedInject constructor(
         _state.update { it.copy(showDeleteDialog = visible) }
     }
 
-    private fun initializeLog(logId: Long?) = viewModelScope.launch(Dispatchers.IO) {
+    private fun initializeLog(logId: Long?) = viewModelScope.launch {
         if (logId != null) {
             val log = habitRepository.getDailyLogsWithHabitWithId(logId)
             _state.update {
@@ -325,7 +325,7 @@ class DailyLogViewModel @AssistedInject constructor(
         }
     }
 
-    private fun saveDailyLog() = viewModelScope.launch(Dispatchers.IO) {
+    private fun saveDailyLog() = viewModelScope.launch {
         try {
             setLoading(true)
             saveImagesToFileDir()
@@ -428,7 +428,7 @@ class DailyLogViewModel @AssistedInject constructor(
 
 
 
-    private fun deleteDailyLog() = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteDailyLog() = viewModelScope.launch {
         val id = _state.value.dailyLogItemDetails.id ?: return@launch
         habitRepository.deleteDailyLog(id)
         _state.update {
