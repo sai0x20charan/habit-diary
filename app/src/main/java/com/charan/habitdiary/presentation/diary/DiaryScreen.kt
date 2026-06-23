@@ -46,16 +46,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import com.charan.habitdiary.core.utils.showToast
 import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
+import com.charan.habitdiary.presentation.common.mapper.toResId
 import com.charan.habitdiary.presentation.common.components.CalendarHeaderItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
 import com.charan.habitdiary.presentation.diary.components.LogSortButton
 import com.charan.habitdiary.presentation.root.navigation.LocalTwoPaneVisibility
-import com.charan.habitdiary.utils.DateUtil.toLocale
+import com.charan.habitdiary.core.utils.DateUtil.toLocale
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
@@ -72,8 +75,9 @@ fun DiaryScreen(
     onNavigateToDailyLogScreen : (id : Long?,date : LocalDate?) -> Unit,
     onImageOpen  : (allImages : List<String>, currentImage : String) -> Unit,
 ) {
-    val viewModel = hiltViewModel<DiaryScreenViewModel>()
+    val viewModel = hiltViewModel<DiaryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scaffoldNavigator = rememberSupportingPaneScaffoldNavigator()
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -120,7 +124,7 @@ fun DiaryScreen(
         state.selectedCalendarView
     ) {
         viewModel.onEvent(
-            DiaryScreenEvents.OnVisibleDateRangeChange(
+            DiaryEvent.OnVisibleDateRangeChange(
                 startDate = when (state.selectedCalendarView) {
                     CalendarViewType.WEEK -> weekCalendarState.firstVisibleWeek.days.first().date
                     CalendarViewType.MONTH -> monthCalendarState.firstVisibleMonth.yearMonth.days.first
@@ -138,7 +142,7 @@ fun DiaryScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                DiaryScreenEffect.ScrollToCurrentDate -> {
+                DiaryEffect.ScrollToCurrentDate -> {
                     when (state.selectedCalendarView) {
                         CalendarViewType.WEEK -> {
 
@@ -151,8 +155,23 @@ fun DiaryScreen(
                     }
                 }
 
-                is DiaryScreenEffect.OnNavigateToAddDailyLogScreen -> {
+                DiaryEffect.ScrollToSelectedDate -> {
+                    when (state.selectedCalendarView) {
+                        CalendarViewType.WEEK -> {
+                            weekCalendarState.animateScrollToWeek(state.selectedDate)
+                        }
+                        CalendarViewType.MONTH -> {
+                            val selectedMonth = kotlinx.datetime.YearMonth(state.selectedDate.year, state.selectedDate.month)
+                            monthCalendarState.animateScrollToMonth(selectedMonth)
+                        }
+                    }
+                }
+
+                is DiaryEffect.OnNavigateToAddDailyLogScreen -> {
                     onNavigateToDailyLogScreen(effect.id, state.selectedDate)
+                }
+                is DiaryEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
 
                 else -> {}
@@ -165,13 +184,13 @@ fun DiaryScreen(
                 title = currentMonthTitle,
                 actions = {
                     ResetCalendarButton {
-                        viewModel.onEvent(DiaryScreenEvents.OnScrollToCurrentDate)
+                        viewModel.onEvent(DiaryEvent.OnScrollToCurrentDate)
                     }
                     CalendarViewToggleButton(
                         selectedView = state.selectedCalendarView,
                         onToggle = {
                             viewModel.onEvent(
-                                DiaryScreenEvents.OnDiaryViewTypeChange(
+                                DiaryEvent.OnDiaryViewTypeChange(
                                     if (state.selectedCalendarView == CalendarViewType.WEEK)
                                         CalendarViewType.MONTH
                                     else
@@ -188,7 +207,7 @@ fun DiaryScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.onEvent(DiaryScreenEvents.OnNavigateToAddDailyLogScreen(null))
+                    viewModel.onEvent(DiaryEvent.OnNavigateToAddDailyLogScreen(null))
                 }
             ) {
                 Icon(
@@ -220,7 +239,7 @@ fun DiaryScreen(
                                             verticalDragAmount <= -swipeThresholdPx &&
                                                     state.selectedCalendarView != CalendarViewType.WEEK -> {
                                                 viewModel.onEvent(
-                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                    DiaryEvent.OnDiaryViewTypeChange(
                                                         CalendarViewType.WEEK
                                                     )
                                                 )
@@ -229,7 +248,7 @@ fun DiaryScreen(
                                             verticalDragAmount >= swipeThresholdPx &&
                                                     state.selectedCalendarView != CalendarViewType.MONTH -> {
                                                 viewModel.onEvent(
-                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                    DiaryEvent.OnDiaryViewTypeChange(
                                                         CalendarViewType.MONTH
                                                     )
                                                 )
@@ -252,7 +271,7 @@ fun DiaryScreen(
                                 CustomWeekCalendar(
                                     calendarState = weekCalendarState,
                                     onClick = { date ->
-                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                        viewModel.onEvent(DiaryEvent.OnDateSelected(date))
                                     },
                                     currentDate = state.currentDate,
                                     selectedDate = state.selectedDate,
@@ -271,7 +290,7 @@ fun DiaryScreen(
                                     currentDate = state.currentDate,
                                     selectedDate = state.selectedDate,
                                     onClick = { date ->
-                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                        viewModel.onEvent(DiaryEvent.OnDateSelected(date))
                                     },
                                     visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
                                     datesWithLogs = state.datesWithLogs,
@@ -284,11 +303,11 @@ fun DiaryScreen(
                             DiaryListContent(
                                 state = state,
                                 onSortToggle = {
-                                    viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
+                                    viewModel.onEvent(DiaryEvent.OnSortTypeChange)
                                 },
                                 onItemClick = {
                                     viewModel.onEvent(
-                                        DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
+                                        DiaryEvent.OnNavigateToAddDailyLogScreen(it)
                                     )
                                 },
                                 onImageClick = onImageOpen,
@@ -311,14 +330,14 @@ fun DiaryScreen(
                     ) {
                         DiaryListContent(
                             state = state,
-                            onSortToggle = {
-                                viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
-                            },
-                            onItemClick = {
-                                viewModel.onEvent(
-                                    DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
-                                )
-                            },
+                             onSortToggle = {
+                                 viewModel.onEvent(DiaryEvent.OnSortTypeChange)
+                             },
+                             onItemClick = {
+                                 viewModel.onEvent(
+                                     DiaryEvent.OnNavigateToAddDailyLogScreen(it)
+                                 )
+                             },
                             onImageClick = onImageOpen,
                             modifier = Modifier
                                 .padding(16.dp)
@@ -379,7 +398,7 @@ private fun ResetCalendarButton(
 @Composable
 private fun DiaryListContent(
     modifier: Modifier,
-    state: DiaryScreenState,
+    state: DiaryState,
 
     onSortToggle: () -> Unit,
     onItemClick: (Long) -> Unit,
@@ -396,7 +415,7 @@ private fun DiaryListContent(
                 horizontalArrangement = Arrangement.End
             ) {
                 LogSortButton(
-                    sortTypeRes = state.sortType.toLocaleString(),
+                    sortTypeRes = state.sortType.toResId(),
                     icon = when (state.sortType) {
                         DailyLogSortType.NEWEST_FIRST -> R.drawable.new_first_sort
                         DailyLogSortType.OLDEST_FIRST -> R.drawable.old_first_sort

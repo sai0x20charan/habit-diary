@@ -7,21 +7,17 @@ import com.charan.habitdiary.BuildConfig
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.data.local.entity.DailyLogMediaEntity
 import com.charan.habitdiary.data.local.entity.HabitEntity
-import com.charan.habitdiary.data.local.model.BackupMetaData
+import com.charan.habitdiary.data.model.BackupMetaData
 import com.charan.habitdiary.data.repository.BackupRepository
+import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.FileRepository
-import com.charan.habitdiary.data.repository.HabitLocalRepository
+import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.HABIT_DIARY_IMAGES
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.HABIT_DIARY_MEDIA_DIR
-import com.charan.habitdiary.notification.NotificationScheduler
-import com.charan.habitdiary.utils.ProcessState
+import com.charan.habitdiary.core.notification.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import okhttp3.Dispatcher
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -29,12 +25,14 @@ import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
-import kotlin.random.Random
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 
-class BackupRepositoryImpl(
-    private val context : Context,
-    private val habitLocalRepository: HabitLocalRepository,
+class BackupRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context : Context,
+    private val habitRepository: HabitRepository,
+    private val diaryRepository: DiaryRepository,
     private val notificationScheduler: NotificationScheduler
 ) : BackupRepository{
     companion object{
@@ -51,16 +49,14 @@ class BackupRepositoryImpl(
         const val HABIT_MEDIA_DIR = "habitMedia/"
         const val HABIT_IMAGES_DIR = "habitImages/"
     }
-    override suspend fun backupData(uri: Uri?): Flow<ProcessState<Boolean>> = flow{
-        if(uri == null){
-            emit(ProcessState.Error("No File Found"))
-            return@flow
+    override suspend fun backupData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
+        if (uri == null) {
+            return@withContext Result.failure(Exception("No File Found"))
         }
-        emit(ProcessState.Loading())
-        try {
-            val habits = habitLocalRepository.getAllHabits()
-            val dailyLogs = habitLocalRepository.getAllDailyLogs()
-            val media = habitLocalRepository.getAllMedia()
+        return@withContext try {
+            val habits = habitRepository.getAllHabits().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val dailyLogs = diaryRepository.getAllDailyLogs().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val media = diaryRepository.getAllMedia().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
             val metaData = BackupMetaData(
                 versionCode = BuildConfig.VERSION_CODE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
@@ -72,11 +68,10 @@ class BackupRepositoryImpl(
             val mediaJson = Json.encodeToString(media)
             val metaJson = Json.encodeToString(metaData)
 
-
-
             val outputStream = context.contentResolver.openOutputStream(uri)
+                ?: throw Exception("Failed to open output stream")
 
-            ZipOutputStream(BufferedOutputStream(outputStream)).use { zip->
+            ZipOutputStream(BufferedOutputStream(outputStream)).use { zip ->
 
                 zip.putNextEntry(ZipEntry(META_FILE))
                 zip.write(metaJson.toByteArray())
@@ -95,10 +90,10 @@ class BackupRepositoryImpl(
                 zip.write(mediaJson.toByteArray())
                 zip.closeEntry()
 
-                val mediaFiles = File(context.filesDir,HABIT_DIARY_MEDIA_DIR)
-                val oldFiles = File(context.filesDir,HABIT_DIARY_IMAGES)
+                val mediaFiles = File(context.filesDir, HABIT_DIARY_MEDIA_DIR)
+                val oldFiles = File(context.filesDir, HABIT_DIARY_IMAGES)
 
-                if(mediaFiles.exists()){
+                if (mediaFiles.exists()) {
                     mediaFiles.listFiles()?.forEach { file ->
                         zip.putNextEntry(ZipEntry("$HABIT_MEDIA_DIR${file.name}"))
                         file.inputStream().use { input ->
@@ -108,7 +103,7 @@ class BackupRepositoryImpl(
                     }
                 }
 
-                if(oldFiles.exists()){
+                if (oldFiles.exists()) {
                     oldFiles.listFiles()?.forEach { file ->
                         zip.putNextEntry(ZipEntry("$HABIT_IMAGES_DIR${file.name}"))
                         file.inputStream().use { input ->
@@ -119,28 +114,25 @@ class BackupRepositoryImpl(
                 }
 
             }
-            emit(ProcessState.Success(true))
-
+            Result.success(true)
         } catch (e: Exception) {
-            emit(ProcessState.Error(e.message ?: "An error occurred"))
+            Result.failure(e)
         }
-
     }
 
-    override suspend fun importData(uri: Uri?): Flow<ProcessState<Boolean>> = flow {
+    override suspend fun importData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
         if (uri == null) {
-            emit(ProcessState.Error("No File Found"))
-            return@flow
+            return@withContext Result.failure(Exception("No File Found"))
         }
-        emit(ProcessState.Loading())
         var importedHabits: List<HabitEntity> = emptyList()
         var importedDailyLogs: List<DailyLogEntity> = emptyList()
         var importedMediaEntities: List<DailyLogMediaEntity> = emptyList()
 
         val fileNameMapping = mutableMapOf<String, String>()
 
-        try {
+        return@withContext try {
             val inputStream = context.contentResolver.openInputStream(uri)
+                ?: throw Exception("Failed to open input stream")
             ZipInputStream(BufferedInputStream(inputStream)).use { zip ->
                 var entry = zip.nextEntry
 
@@ -191,7 +183,7 @@ class BackupRepositoryImpl(
             val habitIdMap = mutableMapOf<Long, Long>()
             if (importedHabits.isNotEmpty()) {
                 val insertHabits = importedHabits.map { it.copy(id = 0) }
-                val newIds = habitLocalRepository.insertHabits(insertHabits)
+                val newIds = habitRepository.insertHabits(insertHabits).onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
 
                 importedHabits.forEachIndexed { index, oldHabit ->
                     habitIdMap[oldHabit.id] = newIds[index]
@@ -212,18 +204,19 @@ class BackupRepositoryImpl(
 
             val newDailyLogIdMap = mutableMapOf<Long, Long>()
             if (importedDailyLogs.isNotEmpty()) {
-                val insertDailyLogs = importedDailyLogs.mapNotNull { oldLog ->
-                    val newHabitId = habitIdMap[oldLog.habitId]
-                    oldLog.copy(
+                val validLogPairs = importedDailyLogs.mapNotNull { oldLog ->
+                    val newHabitId = habitIdMap[oldLog.habitId] ?: return@mapNotNull null
+                    oldLog to oldLog.copy(
                         id = 0,
                         habitId = newHabitId
                     )
                 }
 
-                val newIds = habitLocalRepository.insertDailyLogs(insertDailyLogs)
+                val insertDailyLogs = validLogPairs.map { it.second }
+                val newIds = diaryRepository.insertDailyLogs(insertDailyLogs).onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
 
-                insertDailyLogs.forEachIndexed { index, newLog ->
-                    newDailyLogIdMap[importedDailyLogs[index].id] = newIds[index]
+                validLogPairs.forEachIndexed { index, (oldLog, _) ->
+                    newDailyLogIdMap[oldLog.id] = newIds[index]
                 }
             }
             if (importedMediaEntities.isNotEmpty()) {
@@ -239,14 +232,13 @@ class BackupRepositoryImpl(
                     )
                 }
 
-                habitLocalRepository.upsetDailyLogMediaEntities(finalMediaEntities)
+                diaryRepository.upsertDailyLogMediaEntities(finalMediaEntities).onFailure { return@withContext Result.failure(it) }
             }
 
-            emit(ProcessState.Success(true))
-
+            Result.success(true)
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(ProcessState.Error(e.message ?: "An error occurred"))
+            Result.failure(e)
         }
     }
 

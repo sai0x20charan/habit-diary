@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
-import com.charan.habitdiary.utils.isBiometricAvailable
-import com.charan.habitdiary.utils.getAppVersion
+import com.charan.habitdiary.core.utils.isBiometricAvailable
+import com.charan.habitdiary.core.utils.getAppVersion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ class AppViewModel @Inject constructor(
     private val _state = MutableStateFlow(AppState())
     val state = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<AppEffects>()
+    private val _effect = MutableSharedFlow<AppEffect>()
     val effect = _effect.asSharedFlow()
 
     init {
@@ -91,20 +91,20 @@ class AppViewModel @Inject constructor(
             }
 
         } else {
-            sendEffect(AppEffects.ShowToast(ToastMessage.Res(R.string.biometric_unavailable)))
+            sendEffect(AppEffect.ShowToast(ToastMessage.Res(R.string.biometric_unavailable)))
             dataStoreRepo.setBiometricLockEnabled(false)
 
 
         }
     }
 
-    fun onEvent(event : AppEvents) {
+    fun onEvent(event : AppEvent) {
         when(event) {
-            is AppEvents.OnAuthResult -> {
+            is AppEvent.OnAuthResult -> {
                 handleAuthResult(event.isSuccess)
             }
 
-            AppEvents.OnCloseChangeLog -> {
+            AppEvent.OnCloseChangeLog -> {
                 handleCloseChangeLog()
 
             }
@@ -128,7 +128,7 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    private fun sendEffect(effect : AppEffects) = viewModelScope.launch {
+    private fun sendEffect(effect : AppEffect) = viewModelScope.launch {
         _effect.emit(effect)
 
     }

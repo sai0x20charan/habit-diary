@@ -13,14 +13,6 @@ enum class ThemeOption {
         }
     }
 
-    fun getLocaleString() : Int{
-        return when(this){
-            SYSTEM_DEFAULT -> com.charan.habitdiary.R.string.system
-            LIGHT -> com.charan.habitdiary.R.string.light
-            DARK -> com.charan.habitdiary.R.string.dark
-        }
-    }
-
     fun fromString(value: String): ThemeOption {
         return when (value) {
             "Light" -> LIGHT

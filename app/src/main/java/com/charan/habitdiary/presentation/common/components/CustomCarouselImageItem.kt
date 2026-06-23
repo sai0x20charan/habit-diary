@@ -39,9 +39,9 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.video.VideoFrameDecoder
 import com.charan.habitdiary.R
-import com.charan.habitdiary.presentation.media_viewer.MiniVideoPlayer
-import com.charan.habitdiary.presentation.media_viewer.VideoViewer
-import com.charan.habitdiary.utils.isVideo
+import com.charan.habitdiary.presentation.mediaviewer.components.MiniVideoPlayer
+import com.charan.habitdiary.presentation.mediaviewer.components.VideoViewer
+import com.charan.habitdiary.core.utils.isVideo
 import com.skydoves.cloudy.cloudy
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)

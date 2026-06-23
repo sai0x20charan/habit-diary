@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.charan.habitdiary.ui.theme.IndexItem
-import com.charan.habitdiary.ui.theme.customListItemShapes
+import com.charan.habitdiary.presentation.theme.IndexItem
+import com.charan.habitdiary.presentation.theme.customListItemShapes
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

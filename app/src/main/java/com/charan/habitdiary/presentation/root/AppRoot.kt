@@ -43,8 +43,8 @@ import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.ThemeOption
 import com.charan.habitdiary.presentation.common.components.ChangeLogBottomSheet
 import com.charan.habitdiary.presentation.root.navigation.RootNavigation
-import com.charan.habitdiary.ui.theme.HabitDiaryTheme
-import com.charan.habitdiary.utils.showToast
+import com.charan.habitdiary.presentation.theme.HabitDiaryTheme
+import com.charan.habitdiary.core.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -59,17 +59,17 @@ fun AppRoot(
             override fun onAuthResult(result: AuthenticationResult) {
                 when (result) {
                     is AuthenticationResult.Success -> {
-                        viewModel.onEvent(AppEvents.OnAuthResult(true))
+                        viewModel.onEvent(AppEvent.OnAuthResult(true))
                     }
                     is AuthenticationResult.Error -> {
-                        viewModel.onEvent(AppEvents.OnAuthResult(false))
+                        viewModel.onEvent(AppEvent.OnAuthResult(false))
                     }
                     else -> {}
                 }
             }
 
             override fun onAuthAttemptFailed() {
-                viewModel.onEvent(AppEvents.OnAuthResult(false))
+                viewModel.onEvent(AppEvent.OnAuthResult(false))
             }
         }
     )
@@ -77,7 +77,7 @@ fun AppRoot(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest {
             when (it) {
-                is AppEffects.ShowToast -> {
+                is AppEffect.ShowToast -> {
                     context.showToast(it.message)
                 }
             }
@@ -118,7 +118,7 @@ fun AppRoot(
                 if (!shouldShowBiometricLock) {
                     if(state.showChangeLog){
                         ChangeLogBottomSheet {
-                            viewModel.onEvent(AppEvents.OnCloseChangeLog)
+                            viewModel.onEvent(AppEvent.OnCloseChangeLog)
                         }
                     }
                     RootNavigation(

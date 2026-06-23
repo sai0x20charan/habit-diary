@@ -10,19 +10,18 @@ import com.charan.habitdiary.data.model.enums.ThemeOption
 import com.charan.habitdiary.data.repository.BackupRepository
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
-import com.charan.habitdiary.presentation.settings.SettingsScreenEffect.*
-import com.charan.habitdiary.utils.GITHUB_URL
-import com.charan.habitdiary.utils.PLAY_STORE_URL
-import com.charan.habitdiary.utils.ProcessState
-import com.charan.habitdiary.utils.getAppVersionWithVersionCode
-import com.charan.habitdiary.utils.isBiometricAvailable
+import com.charan.habitdiary.presentation.settings.SettingsEffect.*
+import com.charan.habitdiary.core.utils.GITHUB_URL
+import com.charan.habitdiary.core.utils.PLAY_STORE_URL
+import com.charan.habitdiary.core.utils.getAppVersionWithVersionCode
+import com.charan.habitdiary.core.utils.isBiometricAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,7 +34,7 @@ class SettingsViewModel @Inject constructor(
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<SettingsScreenEffect>()
+    private val _effect = MutableSharedFlow<SettingsEffect>()
     val effect = _effect.asSharedFlow()
 
     init {
@@ -44,66 +43,66 @@ class SettingsViewModel @Inject constructor(
     }
 
 
-    fun onEvent(event: SettingsScreenEvent) {
+    fun onEvent(event: SettingsEvent) {
         when(event){
-            is SettingsScreenEvent.OnThemeChange -> {
+            is SettingsEvent.OnThemeChange -> {
                 changeTheme(event.theme)
             }
-            is SettingsScreenEvent.OnTimeFormatChange -> {
+            is SettingsEvent.OnTimeFormatChange -> {
                 changeTimeFormat(event.is24HourFormat)
 
             }
 
-            is SettingsScreenEvent.OnDynamicColorsChange -> {
+            is SettingsEvent.OnDynamicColorsChange -> {
                 setDynamicColorsState(event.isEnabled)
             }
 
-            SettingsScreenEvent.OnAboutLibrariesClick -> {
-                sendEvent(NavigateToLibrariesScreen)
+            SettingsEvent.OnAboutLibrariesClick -> {
+                sendEffect(NavigateToLibrariesScreen)
             }
-            SettingsScreenEvent.OnBack -> {
-                sendEvent(OnBack)
+            SettingsEvent.OnBack -> {
+                sendEffect(OnBack)
             }
 
-            is SettingsScreenEvent.BackupData -> {
+            is SettingsEvent.BackupData -> {
                 backupData(event.uri)
 
             }
-            SettingsScreenEvent.OnExportDataClick -> {
-                sendEvent(LaunchCreateDocument(backupRepository.fileName))
+            SettingsEvent.OnExportDataClick -> {
+                sendEffect(LaunchCreateDocument(backupRepository.fileName))
             }
 
-            SettingsScreenEvent.OnImportDataClick -> {
-                sendEvent(LaunchOpenDocument)
+            SettingsEvent.OnImportDataClick -> {
+                sendEffect(LaunchOpenDocument)
 
             }
 
-            is SettingsScreenEvent.RestoreBackup -> {
+            is SettingsEvent.RestoreBackup -> {
                 importData(event.uri)
             }
 
-            is SettingsScreenEvent.OnUseSystemFontChange -> {
+            is SettingsEvent.OnUseSystemFontChange -> {
                 handleUseSystemFont(event.useSystemFont)
             }
 
-            is SettingsScreenEvent.OnBiometricLockChange -> {
+            is SettingsEvent.OnBiometricLockChange -> {
                 handleBiometricLockChange(event.isEnabled)
 
             }
 
-            is SettingsScreenEvent.OnOpenSourceCodeClick -> {
-                sendEvent(OpenUrl(GITHUB_URL))
+            is SettingsEvent.OnOpenSourceCodeClick -> {
+                sendEffect(OpenUrl(GITHUB_URL))
             }
 
-            SettingsScreenEvent.OnSendFeedbackClick -> {
-                sendEvent(LaunchSendFeedbackEmail)
+            SettingsEvent.OnSendFeedbackClick -> {
+                sendEffect(LaunchSendFeedbackEmail)
             }
 
-            SettingsScreenEvent.OnRateAppClick -> {
-                sendEvent(OpenUrl(PLAY_STORE_URL))
+            SettingsEvent.OnRateAppClick -> {
+                sendEffect(OpenUrl(PLAY_STORE_URL))
             }
 
-            SettingsScreenEvent.OnToggleChangeLogClick -> {
+            SettingsEvent.OnToggleChangeLogClick -> {
                 handleChangeLogClick()
             }
         }
@@ -126,46 +125,22 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun observeSettingsDataStore() {
-        viewModelScope.launch {
-            dataStore.getSystemFontState.collect { systemFontState ->
-                _state.update {
-                    it.copy(isSystemFontEnabled = systemFontState)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getIs24HourFormat.collect { is24HourFormat ->
-                _state.update {
-                    it.copy(is24HourFormat = is24HourFormat)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getTheme.collect { themeOption ->
-                _state.update {
-                    it.copy(selectedThemeOption = themeOption)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getDynamicColorsState.collect { isEnabled ->
-                _state.update {
-                    it.copy(isDynamicColorsEnabled = isEnabled)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStore.getBiometricLockEnabled.collect { isEnabled ->
-                _state.update {
-                    it.copy(isBiometricLockEnabled = isEnabled)
-                }
-            }
-        }
+    private fun observeSettingsDataStore() = viewModelScope.launch {
+        combine(
+            dataStore.getSystemFontState,
+            dataStore.getIs24HourFormat,
+            dataStore.getTheme,
+            dataStore.getDynamicColorsState,
+            dataStore.getBiometricLockEnabled
+        ) { font, time, theme, dynamic, biometric ->
+            _state.update { it.copy(
+                isSystemFontEnabled = font,
+                is24HourFormat = time,
+                selectedThemeOption = theme,
+                isDynamicColorsEnabled = dynamic,
+                isBiometricLockEnabled = biometric
+            )}
+        }.collect {}
     }
 
 
@@ -205,7 +180,7 @@ class SettingsViewModel @Inject constructor(
                     )
                 }
                 updateBiometricPreference(false)
-                sendEvent(
+                sendEffect(
                     ShowToast(ToastMessage.Res(R.string.biometric_unavailable))
                 )
 
@@ -217,8 +192,8 @@ class SettingsViewModel @Inject constructor(
         dataStore.setBiometricLockEnabled(isEnabled)
     }
 
-    private fun sendEvent(event : SettingsScreenEffect) = viewModelScope.launch{
-            _effect.emit(event)
+    private fun sendEffect(effect : SettingsEffect) = viewModelScope.launch{
+            _effect.emit(effect)
 
     }
 
@@ -231,70 +206,40 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun backupData(uri : Uri)= viewModelScope.launch(Dispatchers.IO) {
-        backupRepository.backupData(uri).collectLatest { state ->
-            when(state){
-                is ProcessState.Error -> {
-                    _state.update {
-                        it.copy(
-                            isExporting = false
-                        )
-                    }
-                    sendEvent(SettingsScreenEffect.ShowToast(ToastMessage.Text(state.exception)))
-
-                }
-                is ProcessState.Loading -> {
-                    _state.update {
-                        it.copy(
-                            isExporting = true
-                        )
-                    }
-                }
-
-                ProcessState.NotDetermined ->{}
-                is ProcessState.Success<*> -> {
-                    _state.update {
-                        it.copy(
-                            isExporting = false
-                        )
-                    }
-                    sendEvent(SettingsScreenEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
-                }
+    private fun backupData(uri: Uri) = viewModelScope.launch {
+        _state.update {
+            it.copy(isExporting = true)
+        }
+        try {
+            val result = backupRepository.backupData(uri)
+            result.onSuccess {
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_saved)))
+            }.onFailure { exception ->
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+            }
+        } finally {
+            _state.update {
+                it.copy(isExporting = false)
             }
         }
     }
 
-    private fun importData(uri : Uri) = viewModelScope.launch(Dispatchers.IO) {
-        backupRepository.importData(uri).collectLatest { state->
-            when(state){
-                is ProcessState.Error -> {
-                    _state.update {
-                        it.copy(
-                            isImporting = false
-                        )
-                    }
-                    sendEvent(SettingsScreenEffect.ShowToast(ToastMessage.Text(state.exception)))
-                }
-                is ProcessState.Loading -> {
-                    _state.update {
-                        it.copy(
-                            isImporting = true
-                        )
-                    }
-                }
-                ProcessState.NotDetermined -> {}
-                is ProcessState.Success<*> -> {
-                    _state.update {
-                        it.copy(
-                            isImporting = false
-                        )
-                    }
-                    sendEvent(SettingsScreenEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
-                }
-            }
-
+    private fun importData(uri: Uri) = viewModelScope.launch {
+        _state.update {
+            it.copy(isImporting = true)
         }
-
+        try {
+            val result = backupRepository.importData(uri)
+            result.onSuccess {
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
+            }.onFailure { exception ->
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+            }
+        } finally {
+            _state.update {
+                it.copy(isImporting = false)
+            }
+        }
     }
 
 }

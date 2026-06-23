@@ -56,6 +56,7 @@
     <string name="dark">Dark</string>
     <string name="mark_as_done">Mark as Done</string>
     <string name="saved_to_download">Saved to Downloads</string>
+    <string name="failed_to_save_media">Failed to save media</string>
     <string name="backup">Backup</string>
     <string name="backup_restore">Backup &amp; Restore</string>
     <string name="export_data">Export Data</string>

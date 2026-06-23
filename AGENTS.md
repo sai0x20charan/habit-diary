@@ -18,20 +18,21 @@ Habit Diary is an Android mobile application used to track habits while capturin
 Overview of the directory layout and what each package contains under the main application module (`app`).
 
 ### `app`
+- **`core`**: Foundational, feature-agnostic application code.
+  - `/di`: Hilt dependency injection modules providing singletons and repository bindings.
+  - `/notification`: Alarm scheduling, receivers, and notifications.
+  - `/utils`: Shared utilities, date/time formatters, and constants.
 - **`data`**: Data layer components.
-  - `/local`: Local Data Source (Room Database: entities, DAOs, type converters, and migrations).
-  - `/model`: Enums (Theme options, Sort types).
-  - `/repository`: Repository interfaces and implementations.
+  - `/local`: Local Data Source (Room Database: entities, DAOs, type converters, models for Room relations, and migrations).
   - `/mapper`: Mappers between data models.
+  - `/model`: Data state models and Enums (Theme options, Sort types).
+  - `/repository`: Repository interfaces and their implementations (`/impl`).
 - **`presentation`**: UI and Presentation layer components.
-  - Screens, ViewModels, State classes, Effect classes, and Event classes.
-  - Shared and reusable UI components.
-  - Presentation-specific model mappings.
-- **`di`**: Hilt dependency injection modules providing singletons and repository bindings.
-- **`notification`**: Alarm scheduling, receivers, and notifications.
-- **`ui/theme`**: Material 3 design system configuration (colors, shapes, typography, theme definition).
-- **`utils`**: Shared utilities, date/time formatters, and helpers.
-- **`widgets`**: App Widget configurations and receivers.
+  - Feature packages (e.g., `adddailylog`, `settings`): Screens, ViewModels, State classes, Effect classes, Event classes, and specific mappers.
+  - `/common`: Shared and reusable UI components, and presentation-specific UI models.
+  - `/root`: Global application state and core navigation definitions.
+  - `/theme`: Material 3 design system configuration (colors, shapes, typography, theme definition).
+  - `/widgets`: App Widget configurations and receivers.
 
 ---
 

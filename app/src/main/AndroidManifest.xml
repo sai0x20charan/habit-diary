@@ -66,14 +66,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource= "@xml/file_path"/>
         </provider>
-        <receiver android:name=".notification.NotificationReceiver"/>
-        <receiver android:name=".notification.BootBroadcastReceiver"
+        <receiver android:name=".core.notification.NotificationReceiver"/>
+        <receiver android:name=".core.notification.BootBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".widgets.AddDailyLogWidgetReceiver"
+        <receiver android:name=".presentation.widgets.AddDailyLogWidgetReceiver"
             android:exported="false"
             android:label="@string/capture_moment">
             <intent-filter>
@@ -84,7 +84,7 @@
                 android:resource="@xml/add_daily_log_widget" />
         </receiver>
         <receiver
-            android:name=".widgets.WidgetDateTimeChangeReceiver"
+            android:name=".presentation.widgets.WidgetDateTimeChangeReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.DATE_CHANGED" />
