@@ -91,7 +91,7 @@ class MediaViewerViewModel @Inject constructor(
         result.onSuccess {
             sendEffect(MediaViewerEffect.ShowToast(ToastMessage.Res(R.string.saved_to_download)))
         }.onFailure { e ->
-            sendEffect(MediaViewerEffect.ShowToast(ToastMessage.Text(e.message ?: "Failed to save media")))
+            sendEffect(MediaViewerEffect.ShowToast(ToastMessage.Res(R.string.failed_to_save_media)))
         }
     }
 

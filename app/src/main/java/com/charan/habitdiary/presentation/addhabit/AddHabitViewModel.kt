@@ -170,7 +170,8 @@ class AddHabitViewModel @Inject constructor(
                     habitReminderTime = reminderTime ?: LocalTime(8,0),
                     isReminderEnabled = checkReminderStatus(habit.isReminderEnabled),
                     habitId = habit.id,
-                    isEdit = true
+                    isEdit = true,
+                    createdAt = habit.createdAt
                 )
             }
         }

@@ -12,6 +12,6 @@ fun AddHabitState.toHabitEntity(): HabitEntity {
         habitFrequency = this.habitFrequency,
         isReminderEnabled = this.isReminderEnabled,
         id = this.habitId ?: 0,
-        createdAt = DateUtil.getCurrentDateTime()
+        createdAt = this.createdAt ?: DateUtil.getCurrentDateTime()
     )
 }

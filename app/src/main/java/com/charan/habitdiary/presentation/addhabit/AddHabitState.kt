@@ -2,6 +2,7 @@ package com.charan.habitdiary.presentation.addhabit
 
 import com.charan.habitdiary.core.utils.DateUtil
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 
 data class AddHabitState(
@@ -20,5 +21,6 @@ data class AddHabitState(
     val showDeleteDialog : Boolean = false,
     val habitId : Long? = null,
     val isEdit : Boolean = false,
-    val is24HourFormat : Boolean = false
+    val is24HourFormat : Boolean = false,
+    val createdAt: LocalDateTime? = null
 )

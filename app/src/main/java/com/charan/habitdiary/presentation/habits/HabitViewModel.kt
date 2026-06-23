@@ -125,7 +125,7 @@ class HabitViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun getHabits() = viewModelScope.launch {
         combine(
-            _state.map { it.habitSortType }.flatMapLatest {
+            _state.map { it.habitSortType }.distinctUntilChanged().flatMapLatest {
                 observeHabits(it)
             },
             _state.map { it.is24HourFormat }.distinctUntilChanged()
@@ -139,17 +139,6 @@ class HabitViewModel @Inject constructor(
     }
 
 
-
-//    private fun getDailyLogs() = viewModelScope.launch(Dispatchers.IO) {
-//        combine(
-//            habitRepository.getDailyLogsInRange(),
-//            _state.map { it.is24HourFormat }.distinctUntilChanged()
-//        ) { logs, is24Hours ->
-//            logs.toDailyLogUIStateList(is24Hours)
-//        }.collectLatest { dailyLogs ->
-//            _state.update { it.copy(dailyLogs = dailyLogs) }
-//        }
-//    }
 
 
     private fun sendEffect(effect : HabitEffect) = viewModelScope.launch {

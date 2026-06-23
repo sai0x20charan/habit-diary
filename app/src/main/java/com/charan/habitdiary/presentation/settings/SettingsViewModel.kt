@@ -210,14 +210,17 @@ class SettingsViewModel @Inject constructor(
         _state.update {
             it.copy(isExporting = true)
         }
-        val result = backupRepository.backupData(uri)
-        _state.update {
-            it.copy(isExporting = false)
-        }
-        result.onSuccess {
-            sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_saved)))
-        }.onFailure { exception ->
-            sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+        try {
+            val result = backupRepository.backupData(uri)
+            result.onSuccess {
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_saved)))
+            }.onFailure { exception ->
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+            }
+        } finally {
+            _state.update {
+                it.copy(isExporting = false)
+            }
         }
     }
 
@@ -225,14 +228,17 @@ class SettingsViewModel @Inject constructor(
         _state.update {
             it.copy(isImporting = true)
         }
-        val result = backupRepository.importData(uri)
-        _state.update {
-            it.copy(isImporting = false)
-        }
-        result.onSuccess {
-            sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
-        }.onFailure { exception ->
-            sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+        try {
+            val result = backupRepository.importData(uri)
+            result.onSuccess {
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
+            }.onFailure { exception ->
+                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+            }
+        } finally {
+            _state.update {
+                it.copy(isImporting = false)
+            }
         }
     }
 

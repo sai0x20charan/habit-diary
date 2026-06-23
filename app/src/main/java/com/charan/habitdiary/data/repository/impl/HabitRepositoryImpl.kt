@@ -36,19 +36,26 @@ class HabitRepositoryImpl @Inject constructor(
     override fun getActiveHabits(): Flow<Result<List<HabitWithDone>>> {
         return combine(
             habitDao.getActiveHabitsFlow(),
-            diaryRepository.getLoggedHabitIdsForRange().map { it.getOrNull() ?: emptyList() }
-        ) { habits, dailyLogs ->
-            val logMap = dailyLogs.associateBy { it.habitId }
-            val mapped = habits.map { habit ->
-                val log = logMap[habit.id]
-                HabitWithDone(
-                    habitEntity = habit,
-                    isDone = log != null,
-                    logId = log?.id,
-                    created = log?.createdAt
-                )
-            }
-            Result.success(mapped)
+            diaryRepository.getLoggedHabitIdsForRange()
+        ) { habits, dailyLogsResult ->
+            dailyLogsResult.fold(
+                onSuccess = { dailyLogs ->
+                    val logMap = dailyLogs.associateBy { it.habitId }
+                    val mapped = habits.map { habit ->
+                        val log = logMap[habit.id]
+                        HabitWithDone(
+                            habitEntity = habit,
+                            isDone = log != null,
+                            logId = log?.id,
+                            created = log?.createdAt
+                        )
+                    }
+                    Result.success(mapped)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
+            )
         }.catch { emit(Result.failure(it)) }
     }
 
@@ -67,19 +74,26 @@ class HabitRepositoryImpl @Inject constructor(
     override fun getTodayHabits(currentDayOfWeek: DayOfWeek): Flow<Result<List<HabitWithDone>>> {
         return combine(
             habitDao.getTodayHabits(currentDayOfWeek),
-            diaryRepository.getLoggedHabitIdsForRange().map { it.getOrNull() ?: emptyList() }
-        ) { habits, dailyLogs ->
-            val logMap = dailyLogs.associateBy { it.habitId }
-            val mapped = habits.map { habit ->
-                val log = logMap[habit.id]
-                HabitWithDone(
-                    habitEntity = habit,
-                    isDone = log != null,
-                    logId = log?.id,
-                    created = log?.createdAt
-                )
-            }
-            Result.success(mapped)
+            diaryRepository.getLoggedHabitIdsForRange()
+        ) { habits, dailyLogsResult ->
+            dailyLogsResult.fold(
+                onSuccess = { dailyLogs ->
+                    val logMap = dailyLogs.associateBy { it.habitId }
+                    val mapped = habits.map { habit ->
+                        val log = logMap[habit.id]
+                        HabitWithDone(
+                            habitEntity = habit,
+                            isDone = log != null,
+                            logId = log?.id,
+                            created = log?.createdAt
+                        )
+                    }
+                    Result.success(mapped)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
+            )
         }.catch { emit(Result.failure(it)) }
     }
 

@@ -89,7 +89,7 @@ class FileRepositoryImpl @Inject constructor(
             else -> ".jpg"
         }
 
-        val file = File(baseDir, "MEDIA_${System.currentTimeMillis()}$extension")
+        val file = File(baseDir, "MEDIA_${System.currentTimeMillis()}_${java.util.UUID.randomUUID()}$extension")
 
         inputStream?.use { input ->
             FileOutputStream(file).use { output ->
@@ -137,10 +137,15 @@ class FileRepositoryImpl @Inject constructor(
                 val uri = resolver.insert(collection, values)
                     ?: throw Exception("Failed to create MediaStore entry")
 
-                resolver.openOutputStream(uri)?.use { output ->
-                    FileInputStream(sourceFile).use { input ->
-                        input.copyTo(output)
-                    }
+                try {
+                    resolver.openOutputStream(uri)?.use { output ->
+                        FileInputStream(sourceFile).use { input ->
+                            input.copyTo(output)
+                        }
+                    } ?: throw Exception("Failed to open output stream for MediaStore entry")
+                } catch (e: Exception) {
+                    resolver.delete(uri, null, null)
+                    throw e
                 }
                 val update = ContentValues().apply {
                     put(MediaStore.MediaColumns.IS_PENDING, 0)

@@ -16,6 +16,7 @@ import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.H
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.HABIT_DIARY_MEDIA_DIR
 import com.charan.habitdiary.core.notification.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -48,14 +49,14 @@ class BackupRepositoryImpl @Inject constructor(
         const val HABIT_MEDIA_DIR = "habitMedia/"
         const val HABIT_IMAGES_DIR = "habitImages/"
     }
-    override suspend fun backupData(uri: Uri?): Result<Boolean> {
+    override suspend fun backupData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
         if (uri == null) {
-            return Result.failure(Exception("No File Found"))
+            return@withContext Result.failure(Exception("No File Found"))
         }
-        return try {
-            val habits = habitRepository.getAllHabits().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
-            val dailyLogs = diaryRepository.getAllDailyLogs().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
-            val media = diaryRepository.getAllMedia().onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+        return@withContext try {
+            val habits = habitRepository.getAllHabits().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val dailyLogs = diaryRepository.getAllDailyLogs().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val media = diaryRepository.getAllMedia().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
             val metaData = BackupMetaData(
                 versionCode = BuildConfig.VERSION_CODE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
@@ -119,9 +120,9 @@ class BackupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun importData(uri: Uri?): Result<Boolean> {
+    override suspend fun importData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
         if (uri == null) {
-            return Result.failure(Exception("No File Found"))
+            return@withContext Result.failure(Exception("No File Found"))
         }
         var importedHabits: List<HabitEntity> = emptyList()
         var importedDailyLogs: List<DailyLogEntity> = emptyList()
@@ -129,7 +130,7 @@ class BackupRepositoryImpl @Inject constructor(
 
         val fileNameMapping = mutableMapOf<String, String>()
 
-        return try {
+        return@withContext try {
             val inputStream = context.contentResolver.openInputStream(uri)
                 ?: throw Exception("Failed to open input stream")
             ZipInputStream(BufferedInputStream(inputStream)).use { zip ->
@@ -182,7 +183,7 @@ class BackupRepositoryImpl @Inject constructor(
             val habitIdMap = mutableMapOf<Long, Long>()
             if (importedHabits.isNotEmpty()) {
                 val insertHabits = importedHabits.map { it.copy(id = 0) }
-                val newIds = habitRepository.insertHabits(insertHabits).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+                val newIds = habitRepository.insertHabits(insertHabits).onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
 
                 importedHabits.forEachIndexed { index, oldHabit ->
                     habitIdMap[oldHabit.id] = newIds[index]
@@ -203,18 +204,19 @@ class BackupRepositoryImpl @Inject constructor(
 
             val newDailyLogIdMap = mutableMapOf<Long, Long>()
             if (importedDailyLogs.isNotEmpty()) {
-                val insertDailyLogs = importedDailyLogs.mapNotNull { oldLog ->
-                    val newHabitId = habitIdMap[oldLog.habitId]
-                    oldLog.copy(
+                val validLogPairs = importedDailyLogs.mapNotNull { oldLog ->
+                    val newHabitId = habitIdMap[oldLog.habitId] ?: return@mapNotNull null
+                    oldLog to oldLog.copy(
                         id = 0,
                         habitId = newHabitId
                     )
                 }
 
-                val newIds = diaryRepository.insertDailyLogs(insertDailyLogs).onFailure { return Result.failure(it) }.getOrNull() ?: emptyList()
+                val insertDailyLogs = validLogPairs.map { it.second }
+                val newIds = diaryRepository.insertDailyLogs(insertDailyLogs).onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
 
-                insertDailyLogs.forEachIndexed { index, newLog ->
-                    newDailyLogIdMap[importedDailyLogs[index].id] = newIds[index]
+                validLogPairs.forEachIndexed { index, (oldLog, _) ->
+                    newDailyLogIdMap[oldLog.id] = newIds[index]
                 }
             }
             if (importedMediaEntities.isNotEmpty()) {
@@ -230,7 +232,7 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                diaryRepository.upsertDailyLogMediaEntities(finalMediaEntities).onFailure { return Result.failure(it) }
+                diaryRepository.upsertDailyLogMediaEntities(finalMediaEntities).onFailure { return@withContext Result.failure(it) }
             }
 
             Result.success(true)

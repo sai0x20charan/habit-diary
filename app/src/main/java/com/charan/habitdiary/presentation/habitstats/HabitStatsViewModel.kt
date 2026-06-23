@@ -40,7 +40,7 @@ class HabitStatsViewModel @AssistedInject constructor(
         fun create(habitId : Long): HabitStatsViewModel
     }
 
-    private val _state = MutableStateFlow(HabitStatsState())
+    private val _state = MutableStateFlow(HabitStatsState(habitId = habitId))
     val state = _state.asStateFlow()
 
     private val _effect = MutableSharedFlow<HabitStatsEffect>()
@@ -85,7 +85,7 @@ class HabitStatsViewModel @AssistedInject constructor(
         val logId = diaryRepository.getLoggedHabitFromIdForRange(
             habitId = _state.value.habitId,
             startOfDay = _state.value.selectedDate.atTime(LocalTime(0,0)),
-            endOfDay = _state.value.selectedDate.atTime(LocalTime(23,59))
+            endOfDay = _state.value.selectedDate.atTime(LocalTime(23,59,59,999_999_999))
         ).onFailure { error ->
             sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to find existing log")))
         }.getOrNull()
@@ -110,7 +110,7 @@ class HabitStatsViewModel @AssistedInject constructor(
             val existingLog = diaryRepository.getLoggedHabitFromIdForRange(
                 habitId = _state.value.habitId,
                 startOfDay = date.atTime(LocalTime(0,0)),
-                endOfDay = date.atTime(LocalTime(23,59))
+                endOfDay = date.atTime(LocalTime(23,59,59,999_999_999))
             ).onFailure { error ->
                 sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to check existing logs")))
             }.getOrNull()

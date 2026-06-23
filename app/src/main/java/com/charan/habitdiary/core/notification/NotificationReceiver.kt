@@ -3,6 +3,7 @@ package com.charan.habitdiary.core.notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.HabitRepository
@@ -30,8 +31,20 @@ class NotificationReceiver : BroadcastReceiver() {
                     IntentActions.SHOW_NOTIFICATION.name -> {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L && appContext != null) {
-                            val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
-                            val habitLog = diaryRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
+                            val habitResult = habitRepository.getHabitWithId(habitId)
+                            habitResult.onFailure {
+                                Log.e("NotificationReceiver", "Failed to get habit", it)
+                                return@launch
+                            }
+                            val habit = habitResult.getOrNull() ?: return@launch
+                            
+                            val habitLogResult = diaryRepository.getLoggedHabitFromIdForRange(habitId)
+                            habitLogResult.onFailure {
+                                Log.e("NotificationReceiver", "Failed to get habit log", it)
+                                return@launch
+                            }
+                            val habitLog = habitLogResult.getOrNull()
+                            
                             if(habitLog == null){
                                 notificationHelper.showNotification(
                                     title = "Habit Reminder",
@@ -51,8 +64,20 @@ class NotificationReceiver : BroadcastReceiver() {
                     IntentActions.MARK_AS_DONE.name -> {
                         val habitId = intent?.getLongExtra("habitId", -1) ?: -1
                         if (habitId != -1L) {
-                            val habit = habitRepository.getHabitWithId(habitId).getOrNull() ?: return@launch
-                            val habitLog = diaryRepository.getLoggedHabitFromIdForRange(habitId).getOrNull()
+                            val habitResult = habitRepository.getHabitWithId(habitId)
+                            habitResult.onFailure {
+                                Log.e("NotificationReceiver", "Failed to get habit", it)
+                                return@launch
+                            }
+                            val habit = habitResult.getOrNull() ?: return@launch
+                            
+                            val habitLogResult = diaryRepository.getLoggedHabitFromIdForRange(habitId)
+                            habitLogResult.onFailure {
+                                Log.e("NotificationReceiver", "Failed to get habit log", it)
+                                return@launch
+                            }
+                            val habitLog = habitLogResult.getOrNull()
+                            
                             if(habitLog == null){
                                 diaryRepository.upsertDailyLog(
                                     DailyLogEntity(

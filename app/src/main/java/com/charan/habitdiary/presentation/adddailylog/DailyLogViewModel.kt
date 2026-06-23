@@ -328,10 +328,15 @@ class DailyLogViewModel @AssistedInject constructor(
         try {
             setLoading(true)
             saveImagesToFileDir()
+            val mediaEntities = _state.value.dailyLogItemDetails.mediaItems
+                .filter { !it.isPendingSave }
+                .toDailyLogMediaEntityList()
             diaryRepository.upsertDailyLog(
                 dailyLog = _state.value.toDailyLogEntity(),
-                mediaEntity = _state.value.dailyLogItemDetails.mediaItems.toDailyLogMediaEntityList()
-            )
+                mediaEntity = mediaEntities
+            ).onFailure { error ->
+                sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to save daily log")))
+            }.getOrNull() ?: return@launch
             sendEffect(DailyLogEffect.OnNavigateBack)
         } finally {
             setLoading(false)
@@ -431,7 +436,9 @@ class DailyLogViewModel @AssistedInject constructor(
 
     private fun deleteDailyLog() = viewModelScope.launch {
         val id = _state.value.dailyLogItemDetails.id ?: return@launch
-        diaryRepository.deleteDailyLog(id)
+        diaryRepository.deleteDailyLog(id).onFailure { error ->
+            sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to delete daily log")))
+        }.getOrNull() ?: return@launch
         _state.update {
             it.copy(showDeleteDialog = false)
         }

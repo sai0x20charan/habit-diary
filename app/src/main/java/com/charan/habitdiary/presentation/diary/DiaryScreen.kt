@@ -155,6 +155,18 @@ fun DiaryScreen(
                     }
                 }
 
+                DiaryEffect.ScrollToSelectedDate -> {
+                    when (state.selectedCalendarView) {
+                        CalendarViewType.WEEK -> {
+                            weekCalendarState.animateScrollToWeek(state.selectedDate)
+                        }
+                        CalendarViewType.MONTH -> {
+                            val selectedMonth = kotlinx.datetime.YearMonth(state.selectedDate.year, state.selectedDate.month)
+                            monthCalendarState.animateScrollToMonth(selectedMonth)
+                        }
+                    }
+                }
+
                 is DiaryEffect.OnNavigateToAddDailyLogScreen -> {
                     onNavigateToDailyLogScreen(effect.id, state.selectedDate)
                 }

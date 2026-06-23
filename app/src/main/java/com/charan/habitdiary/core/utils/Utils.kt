@@ -18,7 +18,7 @@ import com.charan.habitdiary.R
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 
-inline fun <T> suspendRunCatching(block: () -> T): Result<T> {
+suspend inline fun <T> suspendRunCatching(crossinline block: suspend () -> T): Result<T> {
     return try {
         Result.success(block())
     } catch (c: CancellationException) {
