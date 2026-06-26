@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.charan.habitdiary.utils.DateUtil.toLocale
+import com.charan.habitdiary.core.utils.DateUtil.toLocale
 import kotlinx.datetime.DayOfWeek
 import java.time.format.TextStyle
 
@@ -115,9 +115,10 @@ fun CalendarDayItem(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CalendarHeaderItem(
-    dayOfWeek : List<DayOfWeek>
+    dayOfWeek : List<DayOfWeek>,
+    modifier: Modifier
 ) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+    Row(modifier = modifier.fillMaxWidth()) {
         for (dayOfWeek in dayOfWeek) {
             Text(
                 modifier = Modifier.weight(1f),

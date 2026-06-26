@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.charan.habitdiary.data.model.enums.ThemeOption
+import com.charan.habitdiary.presentation.common.mapper.toResId
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -58,7 +59,7 @@ fun ThemeOptionButtonGroup(
                     else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                 }
             ) {
-                Text(stringResource(option.getLocaleString()))
+                Text(stringResource(option.toResId()))
             }
         }
     }

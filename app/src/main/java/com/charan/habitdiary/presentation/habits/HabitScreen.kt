@@ -1,7 +1,9 @@
 package com.charan.habitdiary.presentation.habits
 
 import android.util.Log
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -25,14 +27,18 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import com.charan.habitdiary.R
+import com.charan.habitdiary.core.utils.showToast
+import com.charan.habitdiary.presentation.common.mapper.toResId
 import com.charan.habitdiary.presentation.common.components.CustomDropDown
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.components.SectionHeading
+import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
 import com.charan.habitdiary.presentation.habits.components.EmptyStateItem
 import com.charan.habitdiary.presentation.habits.components.HabitItemCard
 import com.charan.habitdiary.presentation.habits.components.SortButton
-import com.charan.habitdiary.utils.DateUtil.toLocale
+import com.charan.habitdiary.core.utils.DateUtil.toLocale
 import kotlinx.coroutines.flow.collectLatest
 import java.time.format.TextStyle
 
@@ -46,28 +52,33 @@ fun HabitScreen(
     onHabitStats : (id : Long)-> Unit
 
     ) {
-    val viewModel = hiltViewModel<HabitScreenViewModel>()
+    val viewModel = hiltViewModel<HabitViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when(effect){
 
-                is HabitScreenEffect.OnNavigateToAddHabitScreen -> {
+                is HabitEffect.OnNavigateToAddHabitScreen -> {
                     onHabitDetails(effect.id)
                 }
 
-                is HabitScreenEffect.OnNavigateToAddDailyLogScreen -> {
+                is HabitEffect.OnNavigateToAddDailyLogScreen -> {
                     onAddDailyLog(effect.id)
                 }
 
-                is HabitScreenEffect.OnNavigateToHabitStatsScreen -> {
+                is HabitEffect.OnNavigateToHabitStatsScreen -> {
                     onHabitStats(effect.habitId)
+                }
+                is HabitEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
             }
         }
     }
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CustomMediumTopBar(
                 title = stringResource(R.string.today),
@@ -78,7 +89,7 @@ fun HabitScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.onEvent(HabitScreenEvent.OnAddHabitClick)
+                    viewModel.onEvent(HabitEvent.OnAddHabitClick)
                 }
             ) {
                 Icon(
@@ -89,21 +100,19 @@ fun HabitScreen(
         }
     ) { innerPadding->
         LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = innerPadding.toScreenContentPadding()
         ) {
             item {
                 SortButton(
+                    modifier = Modifier,
                     onClick = {
-                        viewModel.onEvent(HabitScreenEvent.OnSortDropDownToggle)
+                        viewModel.onEvent(HabitEvent.OnSortDropDownToggle)
                     },
                     onSortSelected = {
-                        viewModel.onEvent(HabitScreenEvent.OnSortTypeChange(it))
+                        viewModel.onEvent(HabitEvent.OnSortTypeChange(it))
                     },
-                    selectedSortTypeRes = state.habitSortType.toLocaleString(),
+                    selectedSortTypeRes = state.habitSortType.toResId(),
                     isExpanded = state.isSortDropDownExpanded,
                 )
             }
@@ -124,7 +133,7 @@ fun HabitScreen(
                     description = habit.habitDescription,
                     onCompletedChange = { checked->
                         viewModel.onEvent(
-                            HabitScreenEvent.OnHabitCheckToggle(
+                            HabitEvent.OnHabitCheckToggle(
                                 habit = habit,
                                 isChecked = checked
                             )
@@ -133,7 +142,7 @@ fun HabitScreen(
                     isCompleted = habit.isDone,
                     onClick = {
                         viewModel.onEvent(
-                            HabitScreenEvent.OnHabitStatsScreen(
+                            HabitEvent.OnHabitStatsScreen(
                                 habit.id
                             )
                         )

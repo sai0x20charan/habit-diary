@@ -1,13 +1,11 @@
 package com.charan.habitdiary.data.repository
 
 import android.net.Uri
-import com.charan.habitdiary.utils.ProcessState
-import kotlinx.coroutines.flow.Flow
 
 interface BackupRepository {
 
-    suspend fun backupData(uri : Uri?): Flow<ProcessState<Boolean>>
+    suspend fun backupData(uri : Uri?): Result<Boolean>
 
-    suspend fun importData(uri : Uri?) : Flow<ProcessState<Boolean>>
+    suspend fun importData(uri : Uri?) : Result<Boolean>
     val fileName : String
 }

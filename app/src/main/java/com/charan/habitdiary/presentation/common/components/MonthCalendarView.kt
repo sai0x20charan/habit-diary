@@ -1,8 +1,11 @@
 package com.charan.habitdiary.presentation.common.components
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.compose.CalendarState
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import kotlinx.datetime.LocalDate
@@ -20,6 +23,7 @@ fun MonthCalendarView(
     datesWithLogs : Set<LocalDate>,
     habitDoneDates : Set<LocalDate> = emptySet(),
     showWeekHeader: Boolean = true,
+    contentPadding : PaddingValues = PaddingValues(0.dp)
 ) {
     LaunchedEffect(Unit) {
         state.animateScrollToMonth(selectedDate.yearMonth)
@@ -40,10 +44,6 @@ fun MonthCalendarView(
                 isHabitDone = habitDoneDates.contains(it.date)
             )
         },
-        monthHeader = if (showWeekHeader) {
-            { CalendarHeaderItem(it.weekDays.first().map { it.date.dayOfWeek }) }
-        } else {
-            null
-        }
+        contentPadding = contentPadding
     )
 }

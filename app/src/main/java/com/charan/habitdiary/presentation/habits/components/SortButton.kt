@@ -2,6 +2,7 @@ package com.charan.habitdiary.presentation.habits.components
 
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -17,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.charan.habitdiary.data.model.enums.HabitSortType
+import com.charan.habitdiary.presentation.common.mapper.toResId
+import com.charan.habitdiary.presentation.common.mapper.fromResId
 import com.charan.habitdiary.presentation.common.components.CustomDropDown
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -37,10 +40,10 @@ fun SortButton(
         Text(stringResource(selectedSortTypeRes))
 
         CustomDropDown(
-            items = HabitSortType.entries.map { it.toLocaleString() },
+            items = HabitSortType.entries.map { it.toResId() },
             selectedItem = selectedSortTypeRes,
             onItemSelected = {
-                onSortSelected(HabitSortType.fromRes(it as Int))
+                onSortSelected(HabitSortType.fromResId(it as Int))
             },
             isExpanded = isExpanded,
             onDismiss = onClick

@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.charan.habitdiary.presentation.common.components.CustomListItem
-import com.charan.habitdiary.ui.theme.IndexItem
+import com.charan.habitdiary.presentation.theme.IndexItem
 
 @Composable
 fun SettingsSwitchItem(

@@ -1,14 +1,12 @@
 package com.charan.habitdiary.data.repository
 
 import android.net.Uri
-import com.charan.habitdiary.utils.ProcessState
-import kotlinx.coroutines.flow.Flow
 
 interface FileRepository {
 
-    fun saveImagesToCache(imageUri : Uri) : Flow<ProcessState<String>>
+    suspend fun saveImagesToCache(imageUri : Uri) : Result<String>
 
-    fun saveMedia(imageUri : Uri) : Flow<ProcessState<String>>
+    suspend fun saveMedia(imageUri : Uri) : Result<String>
 
     fun createImageUri() : Uri
 
@@ -16,7 +14,7 @@ interface FileRepository {
 
     fun clearCacheMedia()
 
-    fun saveMediaToDownloads(filePath : String) : Flow<ProcessState<Boolean>>
+    suspend fun saveMediaToDownloads(filePath : String) : Result<Boolean>
 
     fun getMediaUri(filePath : String) : Uri
 }

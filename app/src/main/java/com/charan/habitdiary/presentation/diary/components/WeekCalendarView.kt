@@ -1,7 +1,10 @@
 package com.charan.habitdiary.presentation.diary.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.charan.habitdiary.presentation.common.components.CalendarDayItem
 import com.charan.habitdiary.presentation.common.components.CalendarHeaderItem
 import com.kizitonwose.calendar.compose.WeekCalendar
@@ -18,17 +21,15 @@ fun CustomWeekCalendar(
     visibleMonth : Month,
     datesWithLogs : Set<LocalDate>,
     showWeekHeader: Boolean = true,
+    contentPadding : PaddingValues = PaddingValues(0.dp),
+    modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
         calendarState.animateScrollToWeek(selectedDate)
     }
     WeekCalendar(
+        modifier = modifier,
         state = calendarState,
-        weekHeader = if (showWeekHeader) {
-            { CalendarHeaderItem(it.days.map { it.date.dayOfWeek }) }
-        } else {
-            null
-        },
         dayContent = {
             CalendarDayItem(
                 date = it.date.day.toString(),
@@ -38,8 +39,9 @@ fun CustomWeekCalendar(
                     onClick(it.date)
                 },
                 isCurrentMonth = it.date.month == visibleMonth,
-                hasContent = datesWithLogs.contains(it.date)
+                hasContent = datesWithLogs.contains(it.date),
             )
-        }
+        },
+        contentPadding = contentPadding
     )
 }

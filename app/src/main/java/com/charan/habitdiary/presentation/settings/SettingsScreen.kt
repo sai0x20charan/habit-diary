@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,10 +32,15 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -47,16 +54,17 @@ import com.charan.habitdiary.data.repository.impl.BackupRepositoryImpl.Companion
 import com.charan.habitdiary.presentation.common.components.ChangeLogBottomSheet
 import com.charan.habitdiary.presentation.common.components.CustomListItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
+import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.presentation.settings.components.SectionHeader
 import com.charan.habitdiary.presentation.settings.components.SettingsRowItem
 import com.charan.habitdiary.presentation.settings.components.SettingsSwitchItem
 import com.charan.habitdiary.presentation.settings.components.ThemeOptionButtonGroup
-import com.charan.habitdiary.ui.theme.IndexItem
-import com.charan.habitdiary.utils.showToast
+import com.charan.habitdiary.presentation.theme.IndexItem
+import com.charan.habitdiary.core.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
-import com.charan.habitdiary.utils.launchFeedbackEmail
-import com.charan.habitdiary.utils.launchUrl
+import com.charan.habitdiary.core.utils.launchFeedbackEmail
+import com.charan.habitdiary.core.utils.launchUrl
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -73,7 +81,7 @@ fun SettingsScreen(
         )
     ) {
         if(it != null){
-            viewModel.onEvent(SettingsScreenEvent.BackupData(it))
+            viewModel.onEvent(SettingsEvent.BackupData(it))
         }
     }
     val pickedFile =
@@ -81,38 +89,38 @@ fun SettingsScreen(
             contract = ActivityResultContracts.OpenDocument()
         ) { uri ->
             if(uri !=null) {
-                viewModel.onEvent(SettingsScreenEvent.RestoreBackup(uri))
+                viewModel.onEvent(SettingsEvent.RestoreBackup(uri))
             }
         }
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when(effect){
-                SettingsScreenEffect.NavigateToLibrariesScreen -> {
+                SettingsEffect.NavigateToLibrariesScreen -> {
                     navigateToAboutLibraries()
                 }
 
-                is SettingsScreenEffect.LaunchCreateDocument -> {
+                is SettingsEffect.LaunchCreateDocument -> {
                     createDocument.launch(effect.fileName)
                 }
 
-                SettingsScreenEffect.OnBack -> {
+                SettingsEffect.OnBack -> {
 
                 }
 
-                is SettingsScreenEffect.ShowToast -> {
+                is SettingsEffect.ShowToast -> {
                     context.showToast(effect.message)
 
                 }
 
-                SettingsScreenEffect.LaunchOpenDocument -> {
+                SettingsEffect.LaunchOpenDocument -> {
                     pickedFile.launch(arrayOf(FILE_TYPE))
                 }
 
-                is SettingsScreenEffect.OpenUrl -> {
+                is SettingsEffect.OpenUrl -> {
                     context.launchUrl(effect.url)
                 }
 
-                SettingsScreenEffect.LaunchSendFeedbackEmail ->{
+                SettingsEffect.LaunchSendFeedbackEmail ->{
                     context.launchFeedbackEmail()
                 }
             }
@@ -122,11 +130,12 @@ fun SettingsScreen(
     if(state.showChangeLog){
         ChangeLogBottomSheet(
             onDismiss = {
-                viewModel.onEvent(SettingsScreenEvent.OnToggleChangeLogClick)
+                viewModel.onEvent(SettingsEvent.OnToggleChangeLogClick)
             }
         )
     }
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CustomMediumTopBar(
                 title = stringResource(R.string.settings),
@@ -136,10 +145,8 @@ fun SettingsScreen(
         }
     ) {innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal =  16.dp)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = innerPadding.toScreenContentPadding()
         ) {
             item {
                 SectionHeader(
@@ -152,10 +159,16 @@ fun SettingsScreen(
 
                     },
                     supportingContent = {
-                        ThemeOptionButtonGroup(
-                            selectedTheme = state.selectedThemeOption
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            viewModel.onEvent(SettingsScreenEvent.OnThemeChange(it))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            ThemeOptionButtonGroup(
+                                selectedTheme = state.selectedThemeOption
+                            ) {
+                                viewModel.onEvent(SettingsEvent.OnThemeChange(it))
+                            }
                         }
                     },
                     leadingContent = {
@@ -171,7 +184,7 @@ fun SettingsScreen(
                     index = IndexItem.MIDDLE,
                     isChecked = state.isDynamicColorsEnabled,
                     onCheckedChange = {
-                        viewModel.onEvent(SettingsScreenEvent.OnDynamicColorsChange(it))
+                        viewModel.onEvent(SettingsEvent.OnDynamicColorsChange(it))
                     },
                     leadingIcon = Icons.Rounded.ColorLens
                 )
@@ -181,7 +194,7 @@ fun SettingsScreen(
                     index = IndexItem.LAST,
                     isChecked = state.isSystemFontEnabled,
                     onCheckedChange = {
-                        viewModel.onEvent(SettingsScreenEvent.OnUseSystemFontChange(it))
+                        viewModel.onEvent(SettingsEvent.OnUseSystemFontChange(it))
                     },
                     leadingIcon = Icons.Rounded.FontDownload
 
@@ -201,7 +214,7 @@ fun SettingsScreen(
                     index = IndexItem.FIRST,
                     isChecked = state.isBiometricLockEnabled,
                     onCheckedChange = {
-                        viewModel.onEvent(SettingsScreenEvent.OnBiometricLockChange(it))
+                        viewModel.onEvent(SettingsEvent.OnBiometricLockChange(it))
                     },
                     leadingIcon = Icons.Rounded.Fingerprint
                 )
@@ -211,7 +224,7 @@ fun SettingsScreen(
                     index = IndexItem.LAST,
                     isChecked = state.is24HourFormat,
                     onCheckedChange = {
-                        viewModel.onEvent(SettingsScreenEvent.OnTimeFormatChange(it))
+                        viewModel.onEvent(SettingsEvent.OnTimeFormatChange(it))
                     },
                     leadingIcon = Icons.Rounded.AccessTime
                 )
@@ -227,7 +240,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.export_data))
                     },
                     onClick = {
-                        viewModel.onEvent(SettingsScreenEvent.OnExportDataClick)
+                        viewModel.onEvent(SettingsEvent.OnExportDataClick)
                     },
                     trailingContent = {
                         if(state.isExporting){
@@ -250,7 +263,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.import_data))
                     },
                     onClick = {
-                        viewModel.onEvent(SettingsScreenEvent.OnImportDataClick)
+                        viewModel.onEvent(SettingsEvent.OnImportDataClick)
                     },
                     trailingContent = {
                         if(state.isImporting){
@@ -279,7 +292,7 @@ fun SettingsScreen(
                     },
                     onClick = {
                         viewModel.onEvent(
-                            SettingsScreenEvent.OnSendFeedbackClick
+                            SettingsEvent.OnSendFeedbackClick
                         )
                     },
 
@@ -297,7 +310,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.rate_app))
                     },
                     onClick = {
-                        viewModel.onEvent(SettingsScreenEvent.OnRateAppClick)
+                        viewModel.onEvent(SettingsEvent.OnRateAppClick)
                     },
                     leadingContent = {
                         Icon(
@@ -319,7 +332,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.open_source_libraries))
                     },
                     onClick = {
-                        viewModel.onEvent(SettingsScreenEvent.OnAboutLibrariesClick)
+                        viewModel.onEvent(SettingsEvent.OnAboutLibrariesClick)
                     },
                     leadingContent = {
                         Icon(
@@ -336,7 +349,7 @@ fun SettingsScreen(
                     },
                     onClick = {
                         viewModel.onEvent(
-                            SettingsScreenEvent.OnOpenSourceCodeClick
+                            SettingsEvent.OnOpenSourceCodeClick
                         )
                     },
                     leadingContent = {
@@ -354,7 +367,7 @@ fun SettingsScreen(
                     },
                     onClick = {
                         viewModel.onEvent(
-                            SettingsScreenEvent.OnToggleChangeLogClick
+                            SettingsEvent.OnToggleChangeLogClick
                         )
                     },
                     leadingContent = {

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
@@ -60,7 +61,7 @@ fun BottomBarNavigation(
     var previousSelectedItem by rememberSaveable { mutableIntStateOf(0) }
 
     val navSuiteType =
-        NavigationSuiteScaffoldDefaults.navigationSuiteType(currentWindowAdaptiveInfo())
+        NavigationSuiteScaffoldDefaults.navigationSuiteType(currentWindowAdaptiveInfoV2())
     val (entryAnimation, exitAnimation) = remember(
         selectedItem,
         previousSelectedItem,

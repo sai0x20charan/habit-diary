@@ -9,9 +9,16 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -28,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
@@ -46,16 +54,21 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.LayoutDirection
+import com.charan.habitdiary.core.utils.showToast
 import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
+import com.charan.habitdiary.presentation.common.mapper.toResId
 import com.charan.habitdiary.presentation.common.components.CalendarHeaderItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
 import com.charan.habitdiary.presentation.diary.components.LogSortButton
 import com.charan.habitdiary.presentation.root.navigation.LocalTwoPaneVisibility
-import com.charan.habitdiary.utils.DateUtil.toLocale
+import com.charan.habitdiary.core.utils.DateUtil.toLocale
+import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
@@ -72,12 +85,14 @@ fun DiaryScreen(
     onNavigateToDailyLogScreen : (id : Long?,date : LocalDate?) -> Unit,
     onImageOpen  : (allImages : List<String>, currentImage : String) -> Unit,
 ) {
-    val viewModel = hiltViewModel<DiaryScreenViewModel>()
+    val viewModel = hiltViewModel<DiaryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scaffoldNavigator = rememberSupportingPaneScaffoldNavigator()
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val isDetailPaneVisible = LocalTwoPaneVisibility.current
+    val layoutDirection = LocalLayoutDirection.current
     val showSidePane = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
             && !isDetailPaneVisible
     val swipeThresholdPx = with(LocalDensity.current) { 48.dp.toPx() }
@@ -120,7 +135,7 @@ fun DiaryScreen(
         state.selectedCalendarView
     ) {
         viewModel.onEvent(
-            DiaryScreenEvents.OnVisibleDateRangeChange(
+            DiaryEvent.OnVisibleDateRangeChange(
                 startDate = when (state.selectedCalendarView) {
                     CalendarViewType.WEEK -> weekCalendarState.firstVisibleWeek.days.first().date
                     CalendarViewType.MONTH -> monthCalendarState.firstVisibleMonth.yearMonth.days.first
@@ -138,7 +153,7 @@ fun DiaryScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                DiaryScreenEffect.ScrollToCurrentDate -> {
+                DiaryEffect.ScrollToCurrentDate -> {
                     when (state.selectedCalendarView) {
                         CalendarViewType.WEEK -> {
 
@@ -151,8 +166,23 @@ fun DiaryScreen(
                     }
                 }
 
-                is DiaryScreenEffect.OnNavigateToAddDailyLogScreen -> {
+                DiaryEffect.ScrollToSelectedDate -> {
+                    when (state.selectedCalendarView) {
+                        CalendarViewType.WEEK -> {
+                            weekCalendarState.animateScrollToWeek(state.selectedDate)
+                        }
+                        CalendarViewType.MONTH -> {
+                            val selectedMonth = kotlinx.datetime.YearMonth(state.selectedDate.year, state.selectedDate.month)
+                            monthCalendarState.animateScrollToMonth(selectedMonth)
+                        }
+                    }
+                }
+
+                is DiaryEffect.OnNavigateToAddDailyLogScreen -> {
                     onNavigateToDailyLogScreen(effect.id, state.selectedDate)
+                }
+                is DiaryEffect.ShowToast -> {
+                    context.showToast(effect.message)
                 }
 
                 else -> {}
@@ -160,18 +190,19 @@ fun DiaryScreen(
         }
     }
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CustomMediumTopBar(
                 title = currentMonthTitle,
                 actions = {
                     ResetCalendarButton {
-                        viewModel.onEvent(DiaryScreenEvents.OnScrollToCurrentDate)
+                        viewModel.onEvent(DiaryEvent.OnScrollToCurrentDate)
                     }
                     CalendarViewToggleButton(
                         selectedView = state.selectedCalendarView,
                         onToggle = {
                             viewModel.onEvent(
-                                DiaryScreenEvents.OnDiaryViewTypeChange(
+                                DiaryEvent.OnDiaryViewTypeChange(
                                     if (state.selectedCalendarView == CalendarViewType.WEEK)
                                         CalendarViewType.MONTH
                                     else
@@ -188,7 +219,7 @@ fun DiaryScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.onEvent(DiaryScreenEvents.OnNavigateToAddDailyLogScreen(null))
+                    viewModel.onEvent(DiaryEvent.OnNavigateToAddDailyLogScreen(null))
                 }
             ) {
                 Icon(
@@ -199,14 +230,13 @@ fun DiaryScreen(
         }
     ) { innerPadding ->
         SupportingPaneScaffold(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()),
             directive = scaffoldNavigator.scaffoldDirective,
             value = scaffoldNavigator.scaffoldValue,
             mainPane = {
                 AnimatedPane {
                     Column(
                         modifier = Modifier
-
                     ) {
 
                         Column(
@@ -220,7 +250,7 @@ fun DiaryScreen(
                                             verticalDragAmount <= -swipeThresholdPx &&
                                                     state.selectedCalendarView != CalendarViewType.WEEK -> {
                                                 viewModel.onEvent(
-                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                    DiaryEvent.OnDiaryViewTypeChange(
                                                         CalendarViewType.WEEK
                                                     )
                                                 )
@@ -229,7 +259,7 @@ fun DiaryScreen(
                                             verticalDragAmount >= swipeThresholdPx &&
                                                     state.selectedCalendarView != CalendarViewType.MONTH -> {
                                                 viewModel.onEvent(
-                                                    DiaryScreenEvents.OnDiaryViewTypeChange(
+                                                    DiaryEvent.OnDiaryViewTypeChange(
                                                         CalendarViewType.MONTH
                                                     )
                                                 )
@@ -243,7 +273,13 @@ fun DiaryScreen(
                                 )
                             }
                         ) {
-                            CalendarHeaderItem(daysOfWeek())
+                            CalendarHeaderItem(
+                                daysOfWeek(),
+                                modifier = Modifier.padding(
+                                    start = innerPadding.calculateStartPadding(layoutDirection),
+                                    end = innerPadding.calculateEndPadding(layoutDirection)
+                                )
+                            )
                             AnimatedVisibility(
                                 visible = state.selectedCalendarView == CalendarViewType.WEEK,
                                 enter = fadeIn() + expandVertically(),
@@ -252,13 +288,19 @@ fun DiaryScreen(
                                 CustomWeekCalendar(
                                     calendarState = weekCalendarState,
                                     onClick = { date ->
-                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                        viewModel.onEvent(DiaryEvent.OnDateSelected(date))
                                     },
                                     currentDate = state.currentDate,
                                     selectedDate = state.selectedDate,
                                     visibleMonth = weekCalendarState.lastVisibleWeek.days.last().date.month,
                                     datesWithLogs = state.datesWithLogs,
-                                    showWeekHeader = false
+                                    showWeekHeader = false,
+                                    contentPadding = PaddingValues(
+                                        start = innerPadding.calculateStartPadding(
+                                            layoutDirection
+                                        ),
+                                        end = innerPadding.calculateEndPadding(layoutDirection)
+                                    )
                                 )
                             }
                             AnimatedVisibility(
@@ -271,11 +313,17 @@ fun DiaryScreen(
                                     currentDate = state.currentDate,
                                     selectedDate = state.selectedDate,
                                     onClick = { date ->
-                                        viewModel.onEvent(DiaryScreenEvents.OnDateSelected(date))
+                                        viewModel.onEvent(DiaryEvent.OnDateSelected(date))
                                     },
                                     visibleMonth = monthCalendarState.lastVisibleMonth.yearMonth.month,
                                     datesWithLogs = state.datesWithLogs,
-                                    showWeekHeader = false
+                                    showWeekHeader = false,
+                                    contentPadding = PaddingValues(
+                                        start = innerPadding.calculateStartPadding(
+                                            layoutDirection
+                                        ),
+                                        end = innerPadding.calculateEndPadding(layoutDirection)
+                                    )
                                 )
                             }
                         }
@@ -284,17 +332,20 @@ fun DiaryScreen(
                             DiaryListContent(
                                 state = state,
                                 onSortToggle = {
-                                    viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
+                                    viewModel.onEvent(DiaryEvent.OnSortTypeChange)
                                 },
                                 onItemClick = {
                                     viewModel.onEvent(
-                                        DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
+                                        DiaryEvent.OnNavigateToAddDailyLogScreen(it)
                                     )
                                 },
                                 onImageClick = onImageOpen,
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                contentPadding = PaddingValues(
+                                    start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
+                                    end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
+                                    bottom = innerPadding.calculateBottomPadding()
+                                )
                             )
 
                         }
@@ -311,18 +362,21 @@ fun DiaryScreen(
                     ) {
                         DiaryListContent(
                             state = state,
-                            onSortToggle = {
-                                viewModel.onEvent(DiaryScreenEvents.OnSortTypeChange)
-                            },
-                            onItemClick = {
-                                viewModel.onEvent(
-                                    DiaryScreenEvents.OnNavigateToAddDailyLogScreen(it)
-                                )
-                            },
+                             onSortToggle = {
+                                 viewModel.onEvent(DiaryEvent.OnSortTypeChange)
+                             },
+                             onItemClick = {
+                                 viewModel.onEvent(
+                                     DiaryEvent.OnNavigateToAddDailyLogScreen(it)
+                                 )
+                             },
                             onImageClick = onImageOpen,
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(
+                                start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
+                                end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
+                                bottom = innerPadding.calculateBottomPadding()
+                            )
                         )
                     }
 
@@ -379,15 +433,15 @@ private fun ResetCalendarButton(
 @Composable
 private fun DiaryListContent(
     modifier: Modifier,
-    state: DiaryScreenState,
-
+    state: DiaryState,
     onSortToggle: () -> Unit,
     onItemClick: (Long) -> Unit,
-    onImageClick: (List<String>, String) -> Unit
+    onImageClick: (List<String>, String) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     LazyColumn(
-        modifier = Modifier
-            .then(modifier)
+        modifier = modifier,
+        contentPadding = contentPadding
     ) {
 
         item {
@@ -396,7 +450,7 @@ private fun DiaryListContent(
                 horizontalArrangement = Arrangement.End
             ) {
                 LogSortButton(
-                    sortTypeRes = state.sortType.toLocaleString(),
+                    sortTypeRes = state.sortType.toResId(),
                     icon = when (state.sortType) {
                         DailyLogSortType.NEWEST_FIRST -> R.drawable.new_first_sort
                         DailyLogSortType.OLDEST_FIRST -> R.drawable.old_first_sort

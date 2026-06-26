@@ -10,12 +10,12 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.charan.habitdiary.presentation.add_daily_log.AddDailyLogScreen
-import com.charan.habitdiary.presentation.add_habit.AddHabitScreen
-import com.charan.habitdiary.presentation.habit_stats.HabitStatsScreen
-import com.charan.habitdiary.presentation.media_viewer.ImageViewerScreen
-import com.charan.habitdiary.presentation.on_boarding.OnBoardingScreen
-import com.charan.habitdiary.presentation.settings.about_libraries.AboutLibrariesScreen
+import com.charan.habitdiary.presentation.adddailylog.AddDailyLogScreen
+import com.charan.habitdiary.presentation.addhabit.AddHabitScreen
+import com.charan.habitdiary.presentation.habitstats.HabitStatsScreen
+import com.charan.habitdiary.presentation.mediaviewer.MediaViewerScreen
+import com.charan.habitdiary.presentation.onboarding.OnBoardingScreen
+import com.charan.habitdiary.presentation.settings.aboutlibraries.AboutLibrariesScreen
 
 @Composable
 fun RootNavigation(
@@ -133,7 +133,7 @@ fun RootNavigation(
                 }
 
                 is Destinations.ImageViewerScreenNav -> NavEntry(key){
-                    ImageViewerScreen(
+                    MediaViewerScreen(
                         allImages = key.allImagePaths,
                         currentImage = key.currentImage,
                         onBack = {

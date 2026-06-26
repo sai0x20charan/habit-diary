@@ -10,14 +10,14 @@ import com.charan.habitdiary.data.local.entity.DailyLogMediaEntity
 @Dao
 interface DailyLogMediaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMedia(media : DailyLogMediaEntity)
+    suspend fun insertMedia(media : DailyLogMediaEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMedia(mediaList : List<DailyLogMediaEntity>)
+    suspend fun insertMedia(mediaList : List<DailyLogMediaEntity>)
 
     @Upsert
-    fun upsertMedia(media : List<DailyLogMediaEntity>)
+    suspend fun upsertMedia(media : List<DailyLogMediaEntity>)
 
     @Query("SELECT * FROM daily_log_media_entity")
-    fun getAllMedia() : List<DailyLogMediaEntity>
+    suspend fun getAllMedia() : List<DailyLogMediaEntity>
 }
