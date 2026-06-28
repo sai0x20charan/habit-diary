@@ -55,4 +55,8 @@ interface DiaryRepository {
     ): Flow<Result<List<LocalDate>>>
 
     fun getAllLogsWithHabitId(habitId: Long): Flow<Result<List<DailyLogEntity>>>
+
+    fun getAllLogsWithHabit(
+        sortBy: DailyLogSortType = DailyLogSortType.NEWEST_FIRST
+    ) : Flow<Result<List<DailyLogWithHabit>>>
 }

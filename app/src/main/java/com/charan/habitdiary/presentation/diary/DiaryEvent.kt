@@ -16,4 +16,6 @@ sealed class DiaryEvent {
 
     data object OnSortTypeChange : DiaryEvent()
 
+    data object OnNavigateToAllEntries : DiaryEvent()
+
 }

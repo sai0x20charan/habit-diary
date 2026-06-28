@@ -17,6 +17,8 @@ sealed class DailyLogEvent {
     data object OnTakePhotoClick : DailyLogEvent()
 
     data class OnImagePick(val uris : List<Uri>) : DailyLogEvent()
+    
+    data class OnImageClick(val imagePath: String) : DailyLogEvent()
 
     data object OnOpenSettingsForPermissions : DailyLogEvent()
 

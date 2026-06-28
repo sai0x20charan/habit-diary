@@ -67,6 +67,13 @@ interface DailyLogDao {
 """)
     fun getAllLogsForHabitId(habitId: Long): Flow<List<DailyLogEntity>>
 
+    @Query("SELECT * FROM daily_log_entity WHERE isDeleted = 0 ORDER BY createdAt DESC")
+
+    fun getNewestLogWithHabit() : Flow<List<DailyLogWithHabit>>
+
+    @Query("SELECT * FROM daily_log_entity WHERE isDeleted = 0 ORDER BY createdAt ASC")
+    fun getOldestLogWithHabit() : Flow<List<DailyLogWithHabit>>
+
 
 
 }

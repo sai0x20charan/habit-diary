@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,7 +61,8 @@ import com.charan.habitdiary.core.utils.toFormatTimeMs
 @Composable
 fun VideoViewer(
     showControls : Boolean = true,
-    videoPath : String
+    videoPath : String,
+    controlsPadding : PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
     val player = remember {
@@ -89,6 +91,7 @@ fun VideoViewer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomStart)
+                    .padding(controlsPadding)
             ) {
 
                 Row(

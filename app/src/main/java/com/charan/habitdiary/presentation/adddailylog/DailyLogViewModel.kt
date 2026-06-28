@@ -10,6 +10,7 @@ import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.FileRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 import com.charan.habitdiary.core.utils.DateUtil
 import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
 import com.charan.habitdiary.core.utils.DateUtil.toLocalDate
@@ -102,6 +103,9 @@ class DailyLogViewModel @AssistedInject constructor(
             is DailyLogEvent.OnImagePick -> {
                 handleMediaPicked(event.uris)
             }
+            is DailyLogEvent.OnImageClick -> {
+                handleImageClick(event.imagePath)
+            }
             DailyLogEvent.OnOpenSettingsForPermissions -> {
                 permissionManager.openSettingsPermissionScreen()
             }
@@ -150,6 +154,19 @@ class DailyLogViewModel @AssistedInject constructor(
                 handleTextEditingControlsToggle()
             }
         }
+    }
+    
+    private fun handleImageClick(imagePath: String) {
+        val activeMedia = _state.value.dailyLogItemDetails.mediaItems.filter { !it.isDeleted }
+        val mediaItems = activeMedia.map { activeItem ->
+            MediaItemUIModel(mediaPath = activeItem.mediaPath, logId = logId)
+        }
+        sendEffect(
+            DailyLogEffect.OnNavigateToImageViewer(
+                allImages = mediaItems,
+                currentImage = MediaItemUIModel(mediaPath = imagePath, logId = logId)
+            )
+        )
     }
 
     private fun handleTextEditingControlsToggle(){
