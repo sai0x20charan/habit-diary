@@ -155,7 +155,7 @@ private fun BiometricLockScreen(
     ) {
         Image(
             painter = painterResource(R.drawable.app_lock),
-            contentDescription = "App Logo",
+            contentDescription = stringResource(R.string.app_logo_description),
             modifier = Modifier.size(120.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))

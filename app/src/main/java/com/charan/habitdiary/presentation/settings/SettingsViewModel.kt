@@ -215,7 +215,7 @@ class SettingsViewModel @Inject constructor(
             result.onSuccess {
                 sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_saved)))
             }.onFailure { exception ->
-                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+                sendEffect(SettingsEffect.ShowToast(exception.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.an_error_occurred)))
             }
         } finally {
             _state.update {
@@ -233,7 +233,7 @@ class SettingsViewModel @Inject constructor(
             result.onSuccess {
                 sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
             }.onFailure { exception ->
-                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+                sendEffect(SettingsEffect.ShowToast(exception.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.an_error_occurred)))
             }
         } finally {
             _state.update {

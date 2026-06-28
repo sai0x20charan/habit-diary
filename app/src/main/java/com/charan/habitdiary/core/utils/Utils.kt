@@ -139,7 +139,7 @@ fun Context.launchFeedbackEmail() {
             putExtra(Intent.EXTRA_EMAIL, arrayOf(DEVELOPER_EMAIL))
             putExtra(
                 Intent.EXTRA_SUBJECT,
-                "Habit Diary Feedback"
+                getString(R.string.feedback_email_subject)
             )
             putExtra(Intent.EXTRA_TEXT, generateFeedbackEmailBody())
         }
@@ -150,14 +150,14 @@ fun Context.launchFeedbackEmail() {
         )
     }
 }
-private fun generateFeedbackEmailBody(): String {
+private fun Context.generateFeedbackEmailBody(): String {
     return buildString {
         append("\n\n")
         appendLine("---")
-        appendLine("Device & App Info:")
-        appendLine("App Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-        appendLine("Android Version: ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
-        appendLine("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+        appendLine(getString(R.string.feedback_device_app_info))
+        appendLine(getString(R.string.feedback_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
+        appendLine(getString(R.string.feedback_android_version, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT))
+        appendLine(getString(R.string.feedback_device, android.os.Build.MANUFACTURER, android.os.Build.MODEL))
         appendLine("---")
     }
 }

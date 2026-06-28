@@ -410,7 +410,7 @@ private fun CalendarViewToggleButton(
     selectedView: CalendarViewType,
     onToggle: () -> Unit
 ) {
-    CustomTooltipBox(text = "Change Calendar View") {
+    CustomTooltipBox(text = stringResource(R.string.change_calendar_view)) {
         IconButton(
             onClick = onToggle,
             shapes = IconButtonDefaults.shapes()
@@ -420,7 +420,7 @@ private fun CalendarViewToggleButton(
                     CalendarViewType.WEEK -> Icons.Rounded.CalendarViewWeek
                     CalendarViewType.MONTH -> Icons.Rounded.CalendarMonth
                 },
-                contentDescription = "Change Calendar View"
+                contentDescription = stringResource(R.string.change_calendar_view)
             )
         }
     }
@@ -431,14 +431,14 @@ private fun CalendarViewToggleButton(
 private fun ResetCalendarButton(
     onResetClick : () ->Unit
 ){
-    CustomTooltipBox(text = "Current Date") {
+    CustomTooltipBox(text = stringResource(R.string.current_date)) {
         IconButton(
             onClick = onResetClick,
             shapes = IconButtonDefaults.shapes()
         ) {
             Icon(
                 imageVector = Icons.Rounded.Event,
-                contentDescription = "Reset Calendar to Current Date"
+                contentDescription = stringResource(R.string.reset_calendar_to_current_date)
             )
         }
     }
@@ -448,14 +448,14 @@ private fun ResetCalendarButton(
 private fun AllEntriesButton(
     onClick : () -> Unit
 ) {
-    CustomTooltipBox(text = "All Entries") {
+    CustomTooltipBox(text = stringResource(R.string.all_entries)) {
         IconButton(
             onClick = onClick,
             shapes = IconButtonDefaults.shapes()
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.List,
-                contentDescription = "All Entries"
+                contentDescription = stringResource(R.string.all_entries)
             )
         }
     }

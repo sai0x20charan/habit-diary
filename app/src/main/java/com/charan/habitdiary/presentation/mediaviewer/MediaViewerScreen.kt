@@ -123,7 +123,7 @@ fun MediaViewerScreen(
                             type = context.contentResolver.getType(effect.filePath)
                         }
 
-                        val chooser = Intent.createChooser(shareIntent, "Share via")
+                        val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_via))
                         context.startActivity(chooser)
                     }
 
@@ -188,7 +188,7 @@ fun MediaViewerScreen(
                                         )
                                     },
                                 ) {
-                                    Text("Show entry")
+                                    Text(stringResource(R.string.show_entry))
                                 }
                             }
                         }

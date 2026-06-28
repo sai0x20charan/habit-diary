@@ -56,6 +56,8 @@ import androidx.media3.ui.compose.state.rememberMuteButtonState
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import androidx.media3.ui.compose.state.rememberProgressStateWithTickInterval
 import com.charan.habitdiary.core.utils.toFormatTimeMs
+import androidx.compose.ui.res.stringResource
+import com.charan.habitdiary.R
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -206,7 +208,7 @@ fun MiniVideoPlayer(
         ) {
             Icon(
                 imageVector = if(pausePlayState.showPlay) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
-                contentDescription = "Add Photo"
+                contentDescription = stringResource(R.string.play_or_pause_video)
             )
         }
         FilledIconButton(
@@ -229,7 +231,7 @@ fun MiniVideoPlayer(
         ) {
             Icon(
                 imageVector = if(muteState.showMuted) Icons.AutoMirrored.Rounded.VolumeOff else Icons.AutoMirrored.Rounded.VolumeUp,
-                contentDescription = "Toggle Mute",
+                contentDescription = stringResource(R.string.toggle_mute),
                 modifier = Modifier.padding(4.dp)
             )
         }

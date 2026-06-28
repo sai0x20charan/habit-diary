@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import com.charan.habitdiary.presentation.habits.components.RoundCheckbox
 import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
 import kotlinx.datetime.LocalDate
+import androidx.compose.ui.res.stringResource
+import com.charan.habitdiary.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -110,7 +112,7 @@ fun SelectedDateContentItem(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "View Log",
+                                text = stringResource(R.string.view_log),
                                 style = MaterialTheme.typography.bodyMediumEmphasized,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -161,12 +163,12 @@ fun HabitToggleButton(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = if (isDone) "Habit Completed" else "Mark as Done",
+                    text = if (isDone) stringResource(R.string.habit_completed) else stringResource(R.string.mark_as_done),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = if (isDone) "Great job, keep it up!" else "Tap to complete this habit",
+                    text = if (isDone) stringResource(R.string.habit_completed_encouragement) else stringResource(R.string.tap_to_complete_habit),
                     style = MaterialTheme.typography.bodySmallEmphasized,
                 )
             }

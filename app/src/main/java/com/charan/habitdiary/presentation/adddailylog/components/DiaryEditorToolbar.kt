@@ -86,7 +86,7 @@ fun DiaryEditorToolbar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete log"
+                            contentDescription = stringResource(R.string.delete)
                         )
                     }
                 }
@@ -96,7 +96,7 @@ fun DiaryEditorToolbar(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.AttachFile,
-                        contentDescription = "Attach media",
+                        contentDescription = stringResource(R.string.attach_media),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -179,7 +179,7 @@ fun NoteTextEditingControls(
             shapes = IconButtonDefaults.shapes(),
 
         ) {
-            Icon(Icons.Default.TextFormat, contentDescription = "Text formatting")
+            Icon(Icons.Default.TextFormat, contentDescription = stringResource(R.string.text_formatting))
         }
 
         AnimatedVisibility(

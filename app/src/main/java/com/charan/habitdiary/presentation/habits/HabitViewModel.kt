@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.charan.habitdiary.R
 
 @HiltViewModel
 class HabitViewModel @Inject constructor(
@@ -110,12 +111,12 @@ class HabitViewModel @Inject constructor(
         return when (sortType) {
             HabitSortType.ALL_HABITS -> {
                 habitRepository.getActiveHabits()
-                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habits"))) } }
+                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_observe_habits))) } }
                     .map { it.getOrNull() ?: emptyList() }
             }
             HabitSortType.TODAY_HABITS -> {
                 habitRepository.getTodayHabits()
-                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habits"))) } }
+                    .onEach { result -> result.onFailure { error -> sendEffect(HabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_observe_habits))) } }
                     .map { it.getOrNull() ?: emptyList() }
             }
         }
@@ -148,10 +149,10 @@ class HabitViewModel @Inject constructor(
     private fun onAddHabitClick(habitUI : HabitItemUIModel,isChecked : Boolean) = viewModelScope.launch {
         if (isChecked) {
             diaryRepository.upsertDailyLog(habitUI.toDailyLogEntity(DateUtil.getCurrentDateTime()))
-                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error logging habit"))) }
+                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.error_logging_habit))) }
         } else {
             diaryRepository.deleteDailyLog(habitUI.logId ?: return@launch)
-                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error removing log"))) }
+                .onFailure { error -> _effect.emit(HabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.error_removing_log))) }
         }
     }
 

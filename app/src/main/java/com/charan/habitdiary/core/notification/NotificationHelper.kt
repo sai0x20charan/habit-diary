@@ -32,7 +32,7 @@ class NotificationHelper @Inject constructor(@ApplicationContext private val con
             HABIT_REMINDER_CHANNEL_NAME,
             IMPORTANCE_HIGH
         ).apply {
-            description = "Habit Reminder notifications"
+            description = context.getString(R.string.notification_channel_description)
         }
         notificationManager.createNotificationChannel(channel)
     }
@@ -81,7 +81,7 @@ class NotificationHelper @Inject constructor(@ApplicationContext private val con
             .addAction(
                 Notification.Action.Builder(
                     null,
-                    "Mark as Done",
+                    context.getString(R.string.mark_as_done),
                     markAsDoneActionIntent
                 ).build()
             )
