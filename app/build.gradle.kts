@@ -30,8 +30,8 @@ android {
         applicationId = "com.charan.habitdiary"
         minSdk = 26
         targetSdk = 37
-        versionCode = 18
-        versionName = "0.11.2"
+        versionCode = 19
+        versionName = "0.12.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
