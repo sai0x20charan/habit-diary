@@ -72,6 +72,9 @@ class DiaryViewModel @Inject constructor(
             DiaryEvent.OnSortTypeChange -> {
                 handleSortTypeChange()
             }
+            DiaryEvent.OnNavigateToAllEntries -> {
+                sendEffect(DiaryEffect.NavigateToAllEntries)
+            }
 
         }
     }

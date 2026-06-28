@@ -123,9 +123,6 @@
     <string name="habit_diary_is_locked">Habit Diary Locked</string>
     <string name="whats_new">What\'s New</string>
     <string name="version_text">Version: %1$s</string>
-
-
-
-
-
+    <string name="all_entries">All Entries</string>
+    <string name="gallery">Gallery</string>
 </resources>

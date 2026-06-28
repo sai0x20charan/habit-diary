@@ -1,4 +1,4 @@
-package com.charan.habitdiary.presentation.diary.components
+package com.charan.habitdiary.presentation.common.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement

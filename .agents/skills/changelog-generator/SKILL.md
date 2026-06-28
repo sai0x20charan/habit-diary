@@ -5,7 +5,7 @@ description: Generate changelog from git history since the last tag and writes t
 
 # Changelog Generator
 
-Generate a user-facing changelog from the git commit history since the latest tag and write it to `CHANGELOG.md`.
+Generate a user-facing changelog from the git commit history since the latest tag and write it to CHANGELOG.md.
 
 ## Instructions
 
@@ -75,10 +75,9 @@ app/build.gradle.kts
 
 ### 6. Generate the changelog
 
-Overwrite `CHANGELOG.md` using the following format:
+Overwrite [CHANGELOG.md](/app/src/main/assets/CHANGELOG.md) using the following format:
 
 ```markdown
-# Version <new_version>
 
 ## New Features
 - <feature 1>

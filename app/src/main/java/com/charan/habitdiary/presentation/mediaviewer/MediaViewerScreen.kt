@@ -10,18 +10,44 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalFloatingToolbar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -36,6 +62,7 @@ import com.charan.habitdiary.R
 import com.charan.habitdiary.presentation.common.components.BackButton
 import com.charan.habitdiary.presentation.common.components.RationaleDialog
 import com.charan.habitdiary.presentation.common.model.ToastMessage
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 import com.charan.habitdiary.presentation.mediaviewer.components.MediaActionButton
 import com.charan.habitdiary.presentation.mediaviewer.components.VideoViewer
 import com.charan.habitdiary.core.utils.isVideo
@@ -45,18 +72,21 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
 import kotlin.math.abs
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalPermissionsApi::class
+    ExperimentalPermissionsApi::class, ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
 fun MediaViewerScreen(
-    allImages: List<String>,
-    currentImage: String,
-    onBack: () -> Unit
+    allImages: List<MediaItemUIModel>,
+    currentImage: MediaItemUIModel,
+    onBack: () -> Unit,
+    showLogEntryButton: Boolean = true,
+    onNavigateToDailyLog: ((Long, LocalDate?) -> Unit)? = null
 ) {
     val viewModel = hiltViewModel<MediaViewerViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
@@ -68,7 +98,7 @@ fun MediaViewerScreen(
         if(isGranted){
             viewModel.onEvent(
                 MediaViewerEvent.DownloadMedia(
-                    filePath = allImages[pageState.currentPage]
+                    filePath = allImages[pageState.currentPage].mediaPath
                 )
             )
         }
@@ -129,34 +159,66 @@ fun MediaViewerScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = { BackButton(onBackClick = onBack) },
-                actions = {
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                ,
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                HorizontalFloatingToolbar(
+                    expanded = true,
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(bottom = FloatingToolbarDefaults.ContentPadding.calculateBottomPadding()),
+                    colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
+                    trailingContent = {
+                        if (showLogEntryButton) {
+                            val currentMediaItem = allImages[pageState.currentPage]
+                            if (currentMediaItem.logId != null && onNavigateToDailyLog != null) {
+                                FilledTonalButton(
+                                    onClick = {
+                                        onNavigateToDailyLog(
+                                            currentMediaItem.logId,
+                                            currentMediaItem.logDate
+                                        )
+                                    },
+                                ) {
+                                    Text("Show entry")
+                                }
+                            }
+                        }
+                    }
+
+
+                ) {
                     MediaActionButton(
                         onShareClick = {
                             viewModel.onEvent(MediaViewerEvent.ShareMedia(
-                                filePath = allImages[pageState.currentPage],
+                                filePath = allImages[pageState.currentPage].mediaPath,
                             ))
-
-
                         },
                         onSaveClick = {
                             viewModel.onEvent(MediaViewerEvent.DownloadMedia(
-                                filePath = allImages[pageState.currentPage],
+                                filePath = allImages[pageState.currentPage].mediaPath
                             ))
-
                         },
                         isDownloading = state.value.isDownloading
                     )
                 }
-            )
-        },
+            }
+        }
     ) { padding ->
         HorizontalPager(
             state = pageState,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+                .fillMaxSize(),
         ) { pageIndex ->
-            val imageUrl = allImages[pageIndex]
+            val imageUrl = allImages[pageIndex].mediaPath
             val offsetY = remember { Animatable(0f) }
 
 
@@ -205,7 +267,10 @@ fun MediaViewerScreen(
                 if(imageUrl.isVideo()){
                     VideoViewer(
                         showControls = true,
-                        videoPath = imageUrl
+                        videoPath = imageUrl,
+                        controlsPadding = PaddingValues(
+                            bottom = padding.calculateBottomPadding()
+                        )
                     )
                 } else {
                     ZoomableAsyncImage(
