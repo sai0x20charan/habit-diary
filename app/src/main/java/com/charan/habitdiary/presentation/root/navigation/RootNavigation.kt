@@ -64,12 +64,14 @@ fun RootNavigation(
                         onNavigateToAboutLibraries = {
                             backStack.add(Destinations.LibrariesScreenNav)
                         },
-                        onImageOpen = { allImages, currentImage ->
-                            backStack.add(Destinations.ImageViewerScreenNav(allImages,currentImage))
+                        onImageOpen = { allImages, currentImage, showLogEntryButton ->
+                            backStack.add(Destinations.ImageViewerScreenNav(allImages,currentImage, showLogEntryButton))
                         },
                         onHabitStats = { habitId ->
                             backStack.add(Destinations.HabitStatsScreeNav(habitId))
-
+                        },
+                        onNavigateToAllEntries = {
+                            backStack.add(Destinations.AllEntriesScreenNav)
                         }
 
                     )
@@ -97,10 +99,11 @@ fun RootNavigation(
                             backStack.removeLastOrNull()
                         },
                         logId = key.id,
-                        onImageOpen = { allImagesPaths, currentImage ->
+                        onImageOpen = { allImagesPaths, currentImage, showLogEntryButton ->
                             backStack.add(Destinations.ImageViewerScreenNav(
                                 allImagesPaths,
-                                currentImage
+                                currentImage,
+                                showLogEntryButton
                             ))
                         },
                         onHabitOpen = {
@@ -134,10 +137,31 @@ fun RootNavigation(
 
                 is Destinations.ImageViewerScreenNav -> NavEntry(key){
                     MediaViewerScreen(
-                        allImages = key.allImagePaths,
-                        currentImage = key.currentImage,
+                        allImages = key.allMedia,
+                        currentImage = key.currentMedia,
                         onBack = {
                             backStack.removeLastOrNull()
+                        },
+                        showLogEntryButton = key.showLogEntryButton,
+                        onNavigateToDailyLog = { logId, date ->
+                            backStack.add(Destinations.AddDailyLog(logId, date))
+                        }
+                    )
+                }
+
+                is Destinations.AllEntriesScreenNav -> NavEntry(
+                    key,
+                    metadata = ListDetailScene.detailPane()
+                ) {
+                    com.charan.habitdiary.presentation.allentries.AllEntriesScreen(
+                        onBack = {
+                            backStack.removeLastOrNull()
+                        },
+                        onNavigateToDailyLog = { id ->
+                            backStack.add(Destinations.AddDailyLog(id,null))
+                        },
+                        onNavigateToImageViewer = { allImages, currentImage, showLogEntryButton ->
+                            backStack.add(Destinations.ImageViewerScreenNav(allImages, currentImage, showLogEntryButton))
                         }
                     )
                 }

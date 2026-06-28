@@ -118,4 +118,23 @@ class DiaryRepositoryImpl @Inject constructor(
             .map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
+
+    override fun getAllLogsWithHabit(sortBy: DailyLogSortType): Flow<Result<List<DailyLogWithHabit>>> {
+        return when (sortBy) {
+            DailyLogSortType.NEWEST_FIRST -> {
+                dailyLogDao.getNewestLogWithHabit()
+            }
+            DailyLogSortType.OLDEST_FIRST -> {
+                dailyLogDao.getOldestLogWithHabit()
+            }
+        }.map { logs ->
+            val mapped = logs.map { log ->
+                log.copy(
+                    mediaEntities = log.mediaEntities.filter { !it.isDeleted }
+                )
+            }
+            Result.success(mapped)
+        }.catch { emit(Result.failure(it)) }
+
+    }
 }

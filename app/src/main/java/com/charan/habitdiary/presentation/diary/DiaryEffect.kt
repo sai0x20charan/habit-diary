@@ -11,4 +11,6 @@ sealed class DiaryEffect {
     data class OnNavigateToAddDailyLogScreen(val id : Long?) : DiaryEffect()
 
     data class ShowToast(val message: ToastMessage) : DiaryEffect()
+
+    data object NavigateToAllEntries : DiaryEffect()
 }

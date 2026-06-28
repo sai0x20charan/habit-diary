@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CalendarViewWeek
 import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
@@ -33,6 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Text
+import com.charan.habitdiary.presentation.common.components.CustomTooltipBox
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -57,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import com.charan.habitdiary.core.utils.showToast
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 import androidx.window.core.layout.WindowSizeClass
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
@@ -65,7 +69,7 @@ import com.charan.habitdiary.presentation.common.components.CalendarHeaderItem
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.diary.components.CustomWeekCalendar
 import com.charan.habitdiary.presentation.common.components.MonthCalendarView
-import com.charan.habitdiary.presentation.diary.components.LogSortButton
+import com.charan.habitdiary.presentation.common.components.LogSortButton
 import com.charan.habitdiary.presentation.root.navigation.LocalTwoPaneVisibility
 import com.charan.habitdiary.core.utils.DateUtil.toLocale
 import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
@@ -83,7 +87,8 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun DiaryScreen(
     onNavigateToDailyLogScreen : (id : Long?,date : LocalDate?) -> Unit,
-    onImageOpen  : (allImages : List<String>, currentImage : String) -> Unit,
+    onImageOpen  : (allImages : List<MediaItemUIModel>, currentImage : MediaItemUIModel, showLogEntryButton: Boolean) -> Unit,
+    onNavigateToAllEntries : () -> Unit,
 ) {
     val viewModel = hiltViewModel<DiaryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -184,6 +189,9 @@ fun DiaryScreen(
                 is DiaryEffect.ShowToast -> {
                     context.showToast(effect.message)
                 }
+                DiaryEffect.NavigateToAllEntries -> {
+                    onNavigateToAllEntries()
+                }
 
                 else -> {}
             }
@@ -211,6 +219,10 @@ fun DiaryScreen(
                             )
                         }
                     )
+
+                    AllEntriesButton {
+                        viewModel.onEvent(DiaryEvent.OnNavigateToAllEntries)
+                    }
 
                 },
                 scrollBehavior = scrollBehavior
@@ -398,17 +410,19 @@ private fun CalendarViewToggleButton(
     selectedView: CalendarViewType,
     onToggle: () -> Unit
 ) {
-    IconButton(
-        onClick = onToggle,
-        shapes = IconButtonDefaults.shapes()
-    ) {
-        Icon(
-            imageVector = when (selectedView) {
-                CalendarViewType.WEEK -> Icons.Rounded.CalendarViewWeek
-                CalendarViewType.MONTH -> Icons.Rounded.CalendarMonth
-            },
-            contentDescription = "Change Calendar View"
-        )
+    CustomTooltipBox(text = "Change Calendar View") {
+        IconButton(
+            onClick = onToggle,
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                imageVector = when (selectedView) {
+                    CalendarViewType.WEEK -> Icons.Rounded.CalendarViewWeek
+                    CalendarViewType.MONTH -> Icons.Rounded.CalendarMonth
+                },
+                contentDescription = "Change Calendar View"
+            )
+        }
     }
 }
 
@@ -417,14 +431,33 @@ private fun CalendarViewToggleButton(
 private fun ResetCalendarButton(
     onResetClick : () ->Unit
 ){
-    IconButton(
-        onClick = onResetClick,
-        shapes = IconButtonDefaults.shapes()
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Event,
-            contentDescription = "Reset Calendar to Current Date"
-        )
+    CustomTooltipBox(text = "Current Date") {
+        IconButton(
+            onClick = onResetClick,
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Event,
+                contentDescription = "Reset Calendar to Current Date"
+            )
+        }
+    }
+}
+
+@Composable
+private fun AllEntriesButton(
+    onClick : () -> Unit
+) {
+    CustomTooltipBox(text = "All Entries") {
+        IconButton(
+            onClick = onClick,
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.List,
+                contentDescription = "All Entries"
+            )
+        }
     }
 }
 
@@ -436,7 +469,7 @@ private fun DiaryListContent(
     state: DiaryState,
     onSortToggle: () -> Unit,
     onItemClick: (Long) -> Unit,
-    onImageClick: (List<String>, String) -> Unit,
+    onImageClick: (List<MediaItemUIModel>, MediaItemUIModel, Boolean) -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     LazyColumn(
@@ -470,7 +503,10 @@ private fun DiaryListContent(
                 onClick = { onItemClick(log.id) },
                 habitName = log.habitName ?: "",
                 onImageClick = { imagePath ->
-                    onImageClick(log.mediaPaths, imagePath)
+                    val mediaItems = log.mediaPaths.map { path ->
+                        MediaItemUIModel(mediaPath = path, logId = log.id)
+                    }
+                    onImageClick(mediaItems, MediaItemUIModel(mediaPath = imagePath, logId = log.id), true)
                 }
             )
         }

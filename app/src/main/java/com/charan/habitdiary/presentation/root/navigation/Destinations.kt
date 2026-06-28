@@ -3,6 +3,7 @@ package com.charan.habitdiary.presentation.root.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 
 sealed class BottomBarNavDestinations : NavKey{
     @Serializable
@@ -39,10 +40,15 @@ sealed class Destinations : NavKey {
     data object OnBoardingScreenNav : Destinations()
 
     @Serializable
-    data class ImageViewerScreenNav(val allImagePaths: List<String>, val currentImage: String) :
-        Destinations()
+    data class ImageViewerScreenNav(
+        val allMedia: List<MediaItemUIModel>, 
+        val currentMedia: MediaItemUIModel,
+        val showLogEntryButton: Boolean = true
+    ) : Destinations()
 
     @Serializable
     data class HabitStatsScreeNav(val habitId: Long) : Destinations()
 
+    @Serializable
+    data object AllEntriesScreenNav : Destinations()
 }

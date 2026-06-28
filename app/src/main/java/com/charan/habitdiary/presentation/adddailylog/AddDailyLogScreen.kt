@@ -53,6 +53,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.LocalDate
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalPermissionsApi::class
@@ -65,7 +66,7 @@ fun AddDailyLogScreen(
     openImageCaptureOnLaunch : Boolean = false,
     openVideoRecordingOnLaunch : Boolean = false,
     onHabitOpen : (habitId : Long) -> Unit,
-    onImageOpen : (allImages : List<String>, currentImage : String) -> Unit,
+    onImageOpen : (allImages : List<MediaItemUIModel>, currentImage : MediaItemUIModel, showLogEntryButton: Boolean) -> Unit,
     sharedMedia : List<String>? = null
 ) {
     val viewModel = hiltViewModel<DailyLogViewModel, DailyLogViewModel.Factory>(
@@ -199,6 +200,10 @@ fun AddDailyLogScreen(
 
                 is DailyLogEffect.OnNavigateToHabitScreen -> {
                     onHabitOpen(it.habitId)
+                }
+
+                is DailyLogEffect.OnNavigateToImageViewer -> {
+                    onImageOpen(it.allImages, it.currentImage, false)
                 }
 
                 is DailyLogEffect.ShowToast -> {
@@ -337,11 +342,8 @@ fun AddDailyLogScreen(
 
                         },
                         isEdit = true,
-                        onImageOpen = {
-                            onImageOpen(
-                                activeMedia.map { it.mediaPath },
-                                it
-                            )
+                        onImageOpen = { imagePath ->
+                            viewModel.onEvent(DailyLogEvent.OnImageClick(imagePath))
                         }
                     )
                 }

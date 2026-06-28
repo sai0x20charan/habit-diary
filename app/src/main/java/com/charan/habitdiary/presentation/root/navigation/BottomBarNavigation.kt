@@ -43,6 +43,7 @@ import com.charan.habitdiary.R
 import com.charan.habitdiary.presentation.diary.DiaryScreen
 import com.charan.habitdiary.presentation.habits.HabitScreen
 import com.charan.habitdiary.presentation.settings.SettingsScreen
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -50,9 +51,9 @@ fun BottomBarNavigation(
     onAddHabitNav : (Long?) -> Unit,
     onAddDailyLogNav : (id : Long? , date : LocalDate?) -> Unit,
     onNavigateToAboutLibraries : () -> Unit,
-    onImageOpen : (allImage : List<String>,currentImage : String) -> Unit,
+    onImageOpen : (allImage : List<MediaItemUIModel>,currentImage : MediaItemUIModel, showLogEntryButton: Boolean) -> Unit,
     onHabitStats : (id : Long) -> Unit,
-
+    onNavigateToAllEntries : () -> Unit,
 ) {
     val bottomBarBackStack = rememberNavBackStack(BottomBarNavDestinations.Home)
     var selectedItem by rememberSaveable {
@@ -199,11 +200,15 @@ fun BottomBarNavigation(
                                     date
                                 )
                             },
-                            onImageOpen = { allImages, currentImage ->
+                            onImageOpen = { allImages, currentImage, showLogEntryButton ->
                                 onImageOpen(
                                     allImages,
-                                    currentImage
+                                    currentImage,
+                                    showLogEntryButton
                                 )
+                            },
+                            onNavigateToAllEntries = {
+                                onNavigateToAllEntries()
                             }
                         )
                     }
