@@ -157,8 +157,8 @@ fun RootNavigation(
                         onBack = {
                             backStack.removeLastOrNull()
                         },
-                        onNavigateToDailyLog = { id, date ->
-                            backStack.add(Destinations.AddDailyLog(id, date))
+                        onNavigateToDailyLog = { id ->
+                            backStack.add(Destinations.AddDailyLog(id,null))
                         },
                         onNavigateToImageViewer = { allImages, currentImage, showLogEntryButton ->
                             backStack.add(Destinations.ImageViewerScreenNav(allImages, currentImage, showLogEntryButton))
