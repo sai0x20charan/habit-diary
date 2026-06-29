@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.biometric.BiometricManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.charan.habitdiary.BuildConfig
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.ThemeOption
 import com.charan.habitdiary.data.repository.BackupRepository
@@ -16,7 +15,6 @@ import com.charan.habitdiary.core.utils.PLAY_STORE_URL
 import com.charan.habitdiary.core.utils.getAppVersionWithVersionCode
 import com.charan.habitdiary.core.utils.isBiometricAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -27,10 +25,8 @@ import kotlinx.coroutines.launch
 import com.charan.habitdiary.core.notification.NotificationScheduler
 import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
 import com.charan.habitdiary.core.utils.PermissionManager
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.LocalTime
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -175,7 +171,7 @@ class SettingsViewModel @Inject constructor(
                 dataStore.getIs24HourFormat
             ) { enabled, time, is24Hour ->
                 _state.update { it.copy(
-                    isDailyLogReminderEnabled = enabled,
+                    isDailyLogReminderEnabled = enabled && isNotificationPermissionGranted(),
                     dailyLogReminderTime = time,
                     formatedReminderTime = time.toFormattedString(is24Hour)
                 )}
@@ -183,9 +179,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun isNotificationPermissionGranted() : Boolean {
+        return permissionManager.isNotificationPermissionGranted()
+    }
+
     private fun handleDailyLogReminderToggle(isEnabled: Boolean) = viewModelScope.launch {
         if (isEnabled) {
-            if (permissionManager.isNotificationPermissionGranted()) {
+            if (isNotificationPermissionGranted()) {
                 dataStore.setDailyLogReminderEnabled(true)
                 val time = dataStore.getDailyLogReminderTime.first()
                 notificationScheduler.scheduleDailyLogReminder(time, true)

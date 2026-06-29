@@ -11,7 +11,7 @@
     <string name="dismiss">Dismiss</string>
     <string name="save">Save</string>
     <string name="notification_permission_required">Notification Permission Required</string>
-    <string name="notification_permission_description">This permission is needed to send you reminders for your habits.</string>
+    <string name="notification_permission_description">This permission is needed to send you reminders.</string>
     <string name="reminder">Reminder</string>
     <string name="set_reminder_time">Set Reminder Time</string>
     <string name="select_time">Select Time</string>
@@ -127,7 +127,7 @@
     <string name="gallery">Gallery</string>
 
     <string name="notification_channel_name">Habit Reminders</string>
-    <string name="notification_channel_description">Habit Reminder notifications</string>
+    <string name="notification_channel_description">Habit Reminder.</string>
     <string name="notification_reminder_title">Habit Reminder</string>
     <string name="notification_habit_reminder_message">It\'s time for your habit: %1$s</string>
     <string name="failed_to_load_log_details">Failed to load log details</string>
@@ -178,7 +178,7 @@
     <string name="feedback_device">Device: %1$s %2$s</string>
     <string name="daily_log_reminder">Diary Entry Reminder</string>
     <string name="daily_log_reminder_time">Reminder Time</string>
-    <string name="notification_daily_log_channel_description">Diary Entry Reminder notifications</string>
+    <string name="notification_daily_log_channel_description">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_title">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_message">Don\'t forget to write your diary entry today!</string>
 </resources>

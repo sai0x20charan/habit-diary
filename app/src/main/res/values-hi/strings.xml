@@ -10,7 +10,7 @@
     <string name="dismiss">बंद करें</string>
     <string name="save">सहेजें</string>
     <string name="notification_permission_required">सूचना अनुमति आवश्यक</string>
-    <string name="notification_permission_description">आपको आदतों की याद दिलाने के लिए यह अनुमति आवश्यक है।</string>
+    <string name="notification_permission_description">आपको रिमाइंडर भेजने के लिए यह अनुमति आवश्यक है।</string>
     <string name="reminder">रिमाइंडर</string>
     <string name="set_reminder_time">रिमाइंडर समय सेट करें</string>
     <string name="select_time">समय चुनें</string>
@@ -127,7 +127,7 @@
     <string name="gallery">गैलरी</string>
 
     <string name="notification_channel_name">आदत अनुस्मारक</string>
-    <string name="notification_channel_description">आदत अनुस्मारक सूचनाएं</string>
+    <string name="notification_channel_description">आदत अनुस्मारक।</string>
     <string name="notification_reminder_title">आदत अनुस्मारक</string>
     <string name="notification_habit_reminder_message">यह आपकी आदत का समय है: %1$s</string>
     <string name="failed_to_load_log_details">लॉग विवरण लोड करने में विफल</string>
@@ -178,7 +178,7 @@
     <string name="feedback_device">डिवाइस: %1$s %2$s</string>
     <string name="daily_log_reminder">डायरी प्रविष्टि अनुस्मारक</string>
     <string name="daily_log_reminder_time">अनुस्मारक समय</string>
-    <string name="notification_daily_log_channel_description">डायरी प्रविष्टि अनुस्मारक सूचनाएं</string>
+    <string name="notification_daily_log_channel_description">डायरी प्रविष्टि अनुस्मारक</string>
     <string name="notification_daily_log_reminder_title">डायरी प्रविष्टि अनुस्मारक</string>
     <string name="notification_daily_log_reminder_message">आज अपनी डायरी प्रविष्टि लिखना न भूलें!</string>
 </resources>
