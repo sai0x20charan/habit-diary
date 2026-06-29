@@ -8,4 +8,6 @@ sealed class MediaViewerEvent {
     data class ToggleStoragePermissionRationale(val show : Boolean) : MediaViewerEvent()
 
     data object OpenSettingsForPermission : MediaViewerEvent()
+
+    data class OnIndexChange(val index: Int) : MediaViewerEvent()
 }
