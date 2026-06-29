@@ -2,6 +2,7 @@ package com.charan.habitdiary.presentation.settings
 
 import android.net.Uri
 import com.charan.habitdiary.data.model.enums.ThemeOption
+import kotlinx.datetime.LocalTime
 
 sealed class SettingsEvent {
     data class OnThemeChange(val theme : ThemeOption) : SettingsEvent()
@@ -32,4 +33,10 @@ sealed class SettingsEvent {
     data object OnRateAppClick : SettingsEvent()
 
     data object OnToggleChangeLogClick : SettingsEvent()
+
+    data class OnDailyLogReminderToggle(val isEnabled: Boolean) : SettingsEvent()
+    data class OnDailyLogReminderTimeChange(val time: LocalTime) : SettingsEvent()
+    data class OnToggleDailyLogTimeDialog(val show: Boolean) : SettingsEvent()
+    data class TogglePermissionRationale(val show: Boolean) : SettingsEvent()
+    data object OpenPermissionSettings : SettingsEvent()
 }

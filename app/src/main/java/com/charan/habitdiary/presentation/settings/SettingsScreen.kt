@@ -60,13 +60,29 @@ import com.charan.habitdiary.presentation.settings.components.SectionHeader
 import com.charan.habitdiary.presentation.settings.components.SettingsRowItem
 import com.charan.habitdiary.presentation.settings.components.SettingsSwitchItem
 import com.charan.habitdiary.presentation.settings.components.ThemeOptionButtonGroup
+import android.Manifest
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
+import com.google.accompanist.permissions.isGranted
+import com.charan.habitdiary.presentation.common.components.RationaleDialog
+import com.charan.habitdiary.presentation.common.components.SelectTimeDialog
+import com.charan.habitdiary.core.utils.DateUtil
+import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
 import com.charan.habitdiary.presentation.theme.IndexItem
 import com.charan.habitdiary.core.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
 import com.charan.habitdiary.core.utils.launchFeedbackEmail
 import com.charan.habitdiary.core.utils.launchUrl
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun SettingsScreen(
     navigateToAboutLibraries : () -> Unit
@@ -75,6 +91,13 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
+    val notificationPermissionState = rememberPermissionState(
+        permission = Manifest.permission.POST_NOTIFICATIONS
+    ) { isGranted ->
+        if(isGranted) {
+            viewModel.onEvent(SettingsEvent.OnDailyLogReminderToggle(true))
+        }
+    }
     val createDocument = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument(
             FILE_TYPE
@@ -123,6 +146,14 @@ fun SettingsScreen(
                 SettingsEffect.LaunchSendFeedbackEmail ->{
                     context.launchFeedbackEmail()
                 }
+
+                SettingsEffect.RequestNotificationPermission -> {
+                    if (notificationPermissionState.status.shouldShowRationale) {
+                        viewModel.onEvent(SettingsEvent.TogglePermissionRationale(true))
+                    } else {
+                        notificationPermissionState.launchPermissionRequest()
+                    }
+                }
             }
         }
     }
@@ -132,6 +163,34 @@ fun SettingsScreen(
             onDismiss = {
                 viewModel.onEvent(SettingsEvent.OnToggleChangeLogClick)
             }
+        )
+    }
+
+    if (state.showPermissionRationale) {
+        RationaleDialog(
+            title = stringResource(R.string.notification_permission_required),
+            message = stringResource(R.string.notification_permission_description),
+            onDismissRequest = {
+                viewModel.onEvent(SettingsEvent.TogglePermissionRationale(false))
+            },
+            onConfirmRequest = {
+                viewModel.onEvent(SettingsEvent.OpenPermissionSettings)
+                viewModel.onEvent(SettingsEvent.TogglePermissionRationale(false))
+            }
+        )
+    }
+
+    if (state.showDailyLogTimeDialog) {
+        SelectTimeDialog(
+            onDismiss = {
+                viewModel.onEvent(SettingsEvent.OnToggleDailyLogTimeDialog(false))
+            },
+            onTimeSelected = {
+                viewModel.onEvent(SettingsEvent.OnDailyLogReminderTimeChange(it))
+                viewModel.onEvent(SettingsEvent.OnToggleDailyLogTimeDialog(false))
+            },
+            selectedTime = state.dailyLogReminderTime,
+            is24HourFormat = state.is24HourFormat
         )
     }
     Scaffold(
@@ -218,6 +277,38 @@ fun SettingsScreen(
                     },
                     leadingIcon = Icons.Rounded.Fingerprint
                 )
+
+                SettingsSwitchItem(
+                    title = stringResource(R.string.daily_log_reminder),
+                    index = IndexItem.MIDDLE,
+                    isChecked = state.isDailyLogReminderEnabled,
+                    onCheckedChange = {
+                        viewModel.onEvent(SettingsEvent.OnDailyLogReminderToggle(it))
+                    },
+                    leadingIcon = Icons.Rounded.Notifications
+                )
+
+                if (state.isDailyLogReminderEnabled) {
+                    CustomListItem(
+                        indexItem = IndexItem.MIDDLE,
+                        headLineContent = {
+                            Text(stringResource(R.string.daily_log_reminder_time))
+                        },
+                        trailingContent = {
+                            Text(
+                                state.formatedReminderTime,
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        },
+                        leadingContent = {
+                            Spacer(modifier = Modifier.size(IconButtonDefaults.mediumIconSize))
+                        },
+                        onClick = {
+                            viewModel.onEvent(SettingsEvent.OnToggleDailyLogTimeDialog(true))
+                        }
+                    )
+                }
 
                 SettingsSwitchItem(
                     title = stringResource(R.string.hour_format_24),

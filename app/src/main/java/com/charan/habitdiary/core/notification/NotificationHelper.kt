@@ -19,11 +19,17 @@ class NotificationHelper @Inject constructor(@ApplicationContext private val con
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     init {
         createHabitReminderNotificationChannel()
+        createDailyLogReminderNotificationChannel()
     }
 
     companion object {
         private const val HABIT_REMINDER_CHANNEL_ID = "habit_reminder_channel"
         private const val HABIT_REMINDER_CHANNEL_NAME = "Habit Reminders"
+
+        private const val DAILY_LOG_REMINDER_CHANNEL_ID = "daily_log_reminder_channel"
+        private const val DAILY_LOG_REMINDER_CHANNEL_NAME = "Daily Log Reminders"
+
+        const val DAILY_LOG_REMINDER_NOTIFICATION_ID = 100
     }
 
     fun createHabitReminderNotificationChannel() {
@@ -33,6 +39,17 @@ class NotificationHelper @Inject constructor(@ApplicationContext private val con
             IMPORTANCE_HIGH
         ).apply {
             description = context.getString(R.string.notification_channel_description)
+        }
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    fun createDailyLogReminderNotificationChannel() {
+        val channel = NotificationChannel(
+            DAILY_LOG_REMINDER_CHANNEL_ID,
+            DAILY_LOG_REMINDER_CHANNEL_NAME,
+            IMPORTANCE_HIGH
+        ).apply {
+            description = context.getString(R.string.notification_daily_log_channel_description)
         }
         notificationManager.createNotificationChannel(channel)
     }
@@ -90,7 +107,43 @@ class NotificationHelper @Inject constructor(@ApplicationContext private val con
         notificationManager.notify(habitId.toInt(), notification)
     }
 
+    fun showDailyLogReminderNotification(
+        title: String,
+        message: String
+    ) {
+        val openAddDailyLogScreen = Intent(
+            Intent.ACTION_VIEW,
+            "${DeepLinkHandler.BASE_URL}${DeepLinkHandler.DAILYLOG_URI}".toUri()
+        ).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
+        val openAddDailyLogIntent = PendingIntent.getActivity(
+            context,
+            DAILY_LOG_REMINDER_NOTIFICATION_ID,
+            openAddDailyLogScreen,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder =
+            Notification.Builder(context, DAILY_LOG_REMINDER_CHANNEL_ID)
+
+        val notification = builder
+            .setContentTitle(title)
+            .setContentText(message)
+            .setSmallIcon(R.drawable.notification_icon)
+            .setAutoCancel(true)
+            .setContentIntent(openAddDailyLogIntent)
+            .build()
+
+        notificationManager.notify(DAILY_LOG_REMINDER_NOTIFICATION_ID, notification)
+    }
+
     fun cancelNotification(habitId : Long){
         notificationManager.cancel(habitId.toInt())
+    }
+
+    fun cancelDailyLogReminderNotification() {
+        notificationManager.cancel(DAILY_LOG_REMINDER_NOTIFICATION_ID)
     }
 }

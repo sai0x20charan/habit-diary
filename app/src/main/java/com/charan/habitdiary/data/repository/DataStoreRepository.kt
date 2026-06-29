@@ -4,6 +4,7 @@ import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.data.model.enums.HabitSortType
 import com.charan.habitdiary.data.model.enums.ThemeOption
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalTime
 
 interface DataStoreRepository {
 
@@ -43,5 +44,11 @@ interface DataStoreRepository {
 
     val getLastScreenChangeLogVersion : Flow<String>
 
+    suspend fun setDailyLogReminderEnabled(isEnabled: Boolean)
 
+    val getDailyLogReminderEnabled: Flow<Boolean>
+
+    suspend fun setDailyLogReminderTime(time: LocalTime)
+
+    val getDailyLogReminderTime: Flow<LocalTime>
 }
