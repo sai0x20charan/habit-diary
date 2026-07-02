@@ -8,6 +8,10 @@ import com.charan.habitdiary.data.repository.FileRepository
 import com.charan.habitdiary.presentation.common.model.ToastMessage
 import com.charan.habitdiary.core.utils.PermissionManager
 import com.charan.habitdiary.core.utils.isSDK29OrAbove
+import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.assisted.AssistedFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,15 +20,36 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-@HiltViewModel
-class MediaViewerViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = MediaViewerViewModel.Factory::class)
+class MediaViewerViewModel @AssistedInject constructor(
+    @Assisted("allImages") private val allImages: List<MediaItemUIModel>,
+    @Assisted("currentImage") private val currentImage: MediaItemUIModel,
     private val fileRepository: FileRepository,
     private val permissionManager: PermissionManager
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("allImages") allImages: List<MediaItemUIModel>,
+            @Assisted("currentImage") currentImage: MediaItemUIModel
+        ): MediaViewerViewModel
+
+    }
     private val _state = MutableStateFlow(MediaViewerState())
     val state = _state.asStateFlow()
     private val _effect = MutableSharedFlow<MediaViewerEffect>()
     val effect = _effect.asSharedFlow()
+
+    init {
+        val currentIndex = allImages.indexOfFirst { it.mediaPath == currentImage.mediaPath }
+        _state.update {
+            it.copy(
+                images = allImages,
+                currentIndex = if (currentIndex != -1) currentIndex else 0
+            )
+        }
+    }
 
     fun onEvent(event : MediaViewerEvent) {
         when(event){
@@ -45,6 +70,16 @@ class MediaViewerViewModel @Inject constructor(
             is MediaViewerEvent.OpenSettingsForPermission -> {
                 handleOpenSettingsForPermission()
             }
+
+            is MediaViewerEvent.OnIndexChange -> {
+                handleIndexChange(event.index)
+            }
+        }
+    }
+
+    private fun handleIndexChange(index: Int) {
+        _state.update {
+            it.copy(currentIndex = index)
         }
     }
 

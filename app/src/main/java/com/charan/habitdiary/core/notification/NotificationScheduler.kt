@@ -123,4 +123,80 @@ class NotificationScheduler @Inject constructor(
         alarmManager.cancel(pendingIntent)
 
     }
+
+    fun scheduleDailyLogReminder(
+        time: LocalTime?,
+        isReminderEnabled: Boolean = false,
+    ) {
+        val reminderId = NotificationHelper.DAILY_LOG_REMINDER_NOTIFICATION_ID.toLong()
+        if (!isReminderEnabled) {
+            cancelDailyLogReminder()
+            return
+        }
+        if(time == null){
+            return
+        }
+
+        val hours = time.hour
+        val minutes = time.minute
+
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        var scheduledDate = now.date
+        var scheduledTime = LocalDateTime(
+            year = scheduledDate.year,
+            month = scheduledDate.month.number,
+            day = scheduledDate.day,
+            hour = hours,
+            minute = minutes,
+            second = 0,
+            nanosecond = 0
+        )
+        if (scheduledTime <= now) {
+            scheduledDate = scheduledDate.plus(1, DateTimeUnit.DAY)
+            scheduledTime = LocalDateTime(
+                year = scheduledDate.year,
+                month = scheduledDate.month.number,
+                day = scheduledDate.day,
+                hour = hours,
+                minute = minutes,
+                second = 0,
+                nanosecond = 0
+            )
+        }
+
+        val epochMillis = scheduledTime
+            .toInstant(TimeZone.currentSystemDefault())
+            .toEpochMilliseconds()
+
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            action = IntentActions.SHOW_DAILY_LOG_REMINDER.name
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            reminderId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            epochMillis,
+            pendingIntent
+        )
+    }
+
+    fun cancelDailyLogReminder() {
+        val reminderId = NotificationHelper.DAILY_LOG_REMINDER_NOTIFICATION_ID.toLong()
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            action = IntentActions.SHOW_DAILY_LOG_REMINDER.name
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            reminderId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
+    }
 }

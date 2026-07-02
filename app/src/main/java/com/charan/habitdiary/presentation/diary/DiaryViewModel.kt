@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
+import com.charan.habitdiary.R
 
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
@@ -139,7 +140,7 @@ class DiaryViewModel @Inject constructor(
             val start = date.getStartOfDay()
             val end = date.getEndOfDay()
             val logsFlow = diaryRepository.getDailyLogsInRange(start, end, sortType)
-                .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logs"))) } }
+                .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_load_logs))) } }
                 .map { it.getOrNull() ?: emptyList() }
             logsFlow.map { logs ->
                 logs.toDailyLogUIStateList(is24Hours)
@@ -158,7 +159,7 @@ class DiaryViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { range ->
                     diaryRepository.getLoggedDatesInRange(range.first.getStartOfDay(), range.second.getEndOfDay())
-                        .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load logged dates"))) } }
+                        .onEach { result -> result.onFailure { error -> _effect.emit(DiaryEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_load_logged_dates))) } }
                         .map { it.getOrNull() ?: emptyList() }
                 }
                 .collectLatest { dates ->

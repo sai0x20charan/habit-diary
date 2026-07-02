@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.biometric.BiometricManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.charan.habitdiary.BuildConfig
 import com.charan.habitdiary.R
 import com.charan.habitdiary.data.model.enums.ThemeOption
 import com.charan.habitdiary.data.repository.BackupRepository
@@ -16,7 +15,6 @@ import com.charan.habitdiary.core.utils.PLAY_STORE_URL
 import com.charan.habitdiary.core.utils.getAppVersionWithVersionCode
 import com.charan.habitdiary.core.utils.isBiometricAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -24,12 +22,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.charan.habitdiary.core.notification.NotificationScheduler
+import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
+import com.charan.habitdiary.core.utils.PermissionManager
+import kotlinx.datetime.LocalTime
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val dataStore : DataStoreRepository,
     private val backupRepository: BackupRepository,
-    private val biometricManager : BiometricManager
+    private val biometricManager : BiometricManager,
+    private val notificationScheduler: NotificationScheduler,
+    private val permissionManager: PermissionManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
@@ -105,6 +110,22 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OnToggleChangeLogClick -> {
                 handleChangeLogClick()
             }
+
+            is SettingsEvent.OnDailyLogReminderToggle -> {
+                handleDailyLogReminderToggle(event.isEnabled)
+            }
+            is SettingsEvent.OnDailyLogReminderTimeChange -> {
+                handleDailyLogReminderTimeChange(event.time)
+            }
+            is SettingsEvent.OnToggleDailyLogTimeDialog -> {
+                _state.update { it.copy(showDailyLogTimeDialog = event.show) }
+            }
+            is SettingsEvent.TogglePermissionRationale -> {
+                _state.update { it.copy(showPermissionRationale = event.show) }
+            }
+            SettingsEvent.OpenPermissionSettings -> {
+                permissionManager.openSettingsPermissionScreen()
+            }
         }
     }
 
@@ -126,21 +147,63 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun observeSettingsDataStore() = viewModelScope.launch {
-        combine(
-            dataStore.getSystemFontState,
-            dataStore.getIs24HourFormat,
-            dataStore.getTheme,
-            dataStore.getDynamicColorsState,
-            dataStore.getBiometricLockEnabled
-        ) { font, time, theme, dynamic, biometric ->
-            _state.update { it.copy(
-                isSystemFontEnabled = font,
-                is24HourFormat = time,
-                selectedThemeOption = theme,
-                isDynamicColorsEnabled = dynamic,
-                isBiometricLockEnabled = biometric
-            )}
-        }.collect {}
+        launch {
+            combine(
+                dataStore.getSystemFontState,
+                dataStore.getIs24HourFormat,
+                dataStore.getTheme,
+                dataStore.getDynamicColorsState,
+                dataStore.getBiometricLockEnabled
+            ) { font, time, theme, dynamic, biometric ->
+                _state.update { it.copy(
+                    isSystemFontEnabled = font,
+                    is24HourFormat = time,
+                    selectedThemeOption = theme,
+                    isDynamicColorsEnabled = dynamic,
+                    isBiometricLockEnabled = biometric
+                )}
+            }.collect {}
+        }
+        launch {
+            combine(
+                dataStore.getDailyLogReminderEnabled,
+                dataStore.getDailyLogReminderTime,
+                dataStore.getIs24HourFormat
+            ) { enabled, time, is24Hour ->
+                _state.update { it.copy(
+                    isDailyLogReminderEnabled = enabled && isNotificationPermissionGranted(),
+                    dailyLogReminderTime = time,
+                    formatedReminderTime = time.toFormattedString(is24Hour)
+                )}
+            }.collect {}
+        }
+    }
+
+    private fun isNotificationPermissionGranted() : Boolean {
+        return permissionManager.isNotificationPermissionGranted()
+    }
+
+    private fun handleDailyLogReminderToggle(isEnabled: Boolean) = viewModelScope.launch {
+        if (isEnabled) {
+            if (isNotificationPermissionGranted()) {
+                dataStore.setDailyLogReminderEnabled(true)
+                val time = dataStore.getDailyLogReminderTime.first()
+                notificationScheduler.scheduleDailyLogReminder(time, true)
+            } else {
+                sendEffect(SettingsEffect.RequestNotificationPermission)
+            }
+        } else {
+            dataStore.setDailyLogReminderEnabled(false)
+            notificationScheduler.cancelDailyLogReminder()
+        }
+    }
+
+    private fun handleDailyLogReminderTimeChange(time: LocalTime) = viewModelScope.launch {
+        dataStore.setDailyLogReminderTime(time)
+        val isReminderEnabled = _state.value.isDailyLogReminderEnabled
+        if (isReminderEnabled) {
+            notificationScheduler.scheduleDailyLogReminder(time, true)
+        }
     }
 
 
@@ -215,7 +278,7 @@ class SettingsViewModel @Inject constructor(
             result.onSuccess {
                 sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_saved)))
             }.onFailure { exception ->
-                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+                sendEffect(SettingsEffect.ShowToast(exception.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.an_error_occurred)))
             }
         } finally {
             _state.update {
@@ -233,7 +296,7 @@ class SettingsViewModel @Inject constructor(
             result.onSuccess {
                 sendEffect(SettingsEffect.ShowToast(ToastMessage.Res(R.string.backup_restored)))
             }.onFailure { exception ->
-                sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(exception.message ?: "An error occurred")))
+                sendEffect(SettingsEffect.ShowToast(exception.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.an_error_occurred)))
             }
         } finally {
             _state.update {

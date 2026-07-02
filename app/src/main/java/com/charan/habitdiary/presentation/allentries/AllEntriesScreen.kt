@@ -78,7 +78,7 @@ fun AllEntriesScreen(
         modifier = Modifier.nestedScroll(scroll.nestedScrollConnection),
         topBar = {
             CustomMediumTopBar(
-                title = "All Entries",
+                title = stringResource(R.string.all_entries),
                 scrollBehavior = scroll,
                 showBackButton = true,
                 onBackClick = {

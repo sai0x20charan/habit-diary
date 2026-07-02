@@ -16,4 +16,6 @@ sealed interface SettingsEffect {
     data class OpenUrl(val url : String) : SettingsEffect
 
     data object LaunchSendFeedbackEmail : SettingsEffect
+
+    data object RequestNotificationPermission : SettingsEffect
 }

@@ -11,6 +11,7 @@ import com.charan.habitdiary.data.model.enums.ThemeOption
 import com.charan.habitdiary.data.repository.DataStoreRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalTime
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -36,6 +37,10 @@ class DataStoreRepositoryImpl @Inject constructor(
         private val KEY_BIOMETRIC_LOCK = booleanPreferencesKey("biometric_lock")
 
         private val KEY_LAST_SCREEN_CHANGE_LOG_VERSION = stringPreferencesKey("last_screen_change_log_version")
+
+        private val KEY_DAILY_LOG_REMINDER = booleanPreferencesKey("daily_log_reminder")
+
+        private val KEY_DAILY_LOG_REMINDER_TIME = stringPreferencesKey("daily_log_reminder_time")
     }
 
 
@@ -148,5 +153,28 @@ class DataStoreRepositoryImpl @Inject constructor(
     override val getLastScreenChangeLogVersion: Flow<String>
         get() = context.dataStore.data.map { pref ->
             pref[KEY_LAST_SCREEN_CHANGE_LOG_VERSION] ?: "0.0.0"
+        }
+
+    override suspend fun setDailyLogReminderEnabled(isEnabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_DAILY_LOG_REMINDER] = isEnabled
+        }
+    }
+
+    override val getDailyLogReminderEnabled: Flow<Boolean>
+        get() = context.dataStore.data.map { pref ->
+            pref[KEY_DAILY_LOG_REMINDER] ?: false
+        }
+
+    override suspend fun setDailyLogReminderTime(time: LocalTime) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_DAILY_LOG_REMINDER_TIME] = time.toString()
+        }
+    }
+
+    override val getDailyLogReminderTime: Flow<LocalTime>
+        get() = context.dataStore.data.map { pref ->
+            val timeString = pref[KEY_DAILY_LOG_REMINDER_TIME] ?: "20:00"
+            LocalTime.parse(timeString)
         }
 }

@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -88,25 +89,31 @@ fun MediaViewerScreen(
     showLogEntryButton: Boolean = true,
     onNavigateToDailyLog: ((Long, LocalDate?) -> Unit)? = null
 ) {
-    val viewModel = hiltViewModel<MediaViewerViewModel>()
-    val state = viewModel.state.collectAsStateWithLifecycle()
-    val pageState = rememberPagerState(pageCount = { allImages.size })
+    val viewModel = hiltViewModel<MediaViewerViewModel, MediaViewerViewModel.Factory>(
+        creationCallback = { factory ->
+            factory.create(allImages, currentImage)
+        }
+    )
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val pageState = rememberPagerState(pageCount = { state.images.size}, initialPage = state.currentIndex)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     val storagePermission = rememberPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE){ isGranted ->
         if(isGranted){
-            viewModel.onEvent(
-                MediaViewerEvent.DownloadMedia(
-                    filePath = allImages[pageState.currentPage].mediaPath
+            state.images.getOrNull(pageState.currentPage)?.let { mediaItem ->
+                viewModel.onEvent(
+                    MediaViewerEvent.DownloadMedia(
+                        filePath = mediaItem.mediaPath
+                    )
                 )
-            )
+            }
         }
     }
-
-
-    LaunchedEffect(currentImage) {
-        pageState.scrollToPage(allImages.indexOf(currentImage))
+    LaunchedEffect(pageState.currentPage) {
+        if (state.images.isNotEmpty() && pageState.currentPage != state.currentIndex) {
+            viewModel.onEvent(MediaViewerEvent.OnIndexChange(pageState.currentPage))
+        }
     }
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -123,7 +130,7 @@ fun MediaViewerScreen(
                             type = context.contentResolver.getType(effect.filePath)
                         }
 
-                        val chooser = Intent.createChooser(shareIntent, "Share via")
+                        val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_via))
                         context.startActivity(chooser)
                     }
 
@@ -140,7 +147,7 @@ fun MediaViewerScreen(
         }
     }
 
-    if(state.value.showPermissionDialog){
+    if(state.showPermissionDialog){
         RationaleDialog(
             title = stringResource(R.string.storage_permission_required),
             message = stringResource(R.string.storage_permission_description),
@@ -178,17 +185,18 @@ fun MediaViewerScreen(
                     colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
                     trailingContent = {
                         if (showLogEntryButton) {
-                            val currentMediaItem = allImages[pageState.currentPage]
-                            if (currentMediaItem.logId != null && onNavigateToDailyLog != null) {
-                                FilledTonalButton(
-                                    onClick = {
-                                        onNavigateToDailyLog(
-                                            currentMediaItem.logId,
-                                            currentMediaItem.logDate
-                                        )
-                                    },
-                                ) {
-                                    Text("Show entry")
+                            state.images.getOrNull(pageState.currentPage)?.let { currentMediaItem ->
+                                if (currentMediaItem.logId != null && onNavigateToDailyLog != null) {
+                                    FilledTonalButton(
+                                        onClick = {
+                                            onNavigateToDailyLog(
+                                                currentMediaItem.logId,
+                                                currentMediaItem.logDate
+                                            )
+                                        },
+                                    ) {
+                                        Text(stringResource(R.string.show_entry))
+                                    }
                                 }
                             }
                         }
@@ -198,16 +206,20 @@ fun MediaViewerScreen(
                 ) {
                     MediaActionButton(
                         onShareClick = {
-                            viewModel.onEvent(MediaViewerEvent.ShareMedia(
-                                filePath = allImages[pageState.currentPage].mediaPath,
-                            ))
+                            state.images.getOrNull(pageState.currentPage)?.let { mediaItem ->
+                                viewModel.onEvent(MediaViewerEvent.ShareMedia(
+                                    filePath = mediaItem.mediaPath,
+                                ))
+                            }
                         },
                         onSaveClick = {
-                            viewModel.onEvent(MediaViewerEvent.DownloadMedia(
-                                filePath = allImages[pageState.currentPage].mediaPath
-                            ))
+                            state.images.getOrNull(pageState.currentPage)?.let { mediaItem ->
+                                viewModel.onEvent(MediaViewerEvent.DownloadMedia(
+                                    filePath = mediaItem.mediaPath
+                                ))
+                            }
                         },
-                        isDownloading = state.value.isDownloading
+                        isDownloading = state.isDownloading
                     )
                 }
             }
@@ -216,14 +228,10 @@ fun MediaViewerScreen(
         HorizontalPager(
             state = pageState,
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
         ) { pageIndex ->
-            val imageUrl = allImages[pageIndex].mediaPath
+            val imageUrl = state.images[pageIndex].mediaPath
             val offsetY = remember { Animatable(0f) }
-
-
-
-
             val configuration = LocalWindowInfo.current.containerSize
             val density = LocalDensity.current
             val dragLimit = with(density) { configuration.height.dp.toPx()} /11

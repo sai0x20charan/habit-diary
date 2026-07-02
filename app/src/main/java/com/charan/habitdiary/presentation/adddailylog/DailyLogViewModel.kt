@@ -255,7 +255,7 @@ class DailyLogViewModel @AssistedInject constructor(
     private fun initializeLog(logId: Long?) = viewModelScope.launch {
         if (logId != null) {
             val log = diaryRepository.getDailyLogsWithHabitWithId(logId).onFailure { error ->
-                sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load log details")))
+                sendEffect(DailyLogEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_load_log_details)))
             }.getOrNull() ?: return@launch
             _state.update {
                 it.copy(
@@ -352,7 +352,7 @@ class DailyLogViewModel @AssistedInject constructor(
                 dailyLog = _state.value.toDailyLogEntity(),
                 mediaEntity = mediaEntities
             ).onFailure { error ->
-                sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to save daily log")))
+                sendEffect(DailyLogEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_save_daily_log)))
             }.getOrNull() ?: return@launch
             sendEffect(DailyLogEffect.OnNavigateBack)
         } finally {
@@ -411,7 +411,7 @@ class DailyLogViewModel @AssistedInject constructor(
                 .map { uri ->
                     async {
                         fileRepository.saveImagesToCache(uri).onFailure { error ->
-                            sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to cache image")))
+                            sendEffect(DailyLogEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_cache_image)))
                         }.getOrNull()
                     }
                 }
@@ -454,7 +454,7 @@ class DailyLogViewModel @AssistedInject constructor(
     private fun deleteDailyLog() = viewModelScope.launch {
         val id = _state.value.dailyLogItemDetails.id ?: return@launch
         diaryRepository.deleteDailyLog(id).onFailure { error ->
-            sendEffect(DailyLogEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to delete daily log")))
+            sendEffect(DailyLogEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_delete_daily_log)))
         }.getOrNull() ?: return@launch
         _state.update {
             it.copy(showDeleteDialog = false)

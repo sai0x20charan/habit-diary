@@ -36,6 +36,8 @@ import com.kizitonwose.calendar.compose.CalendarState
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
+import androidx.compose.ui.res.stringResource
+import com.charan.habitdiary.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -87,7 +89,7 @@ fun CalendarCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.NavigateBefore,
-                                    contentDescription = "Previous month"
+                                    contentDescription = stringResource(R.string.previous_month)
                                 )
                             }
                         },
@@ -106,7 +108,7 @@ fun CalendarCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.NavigateNext,
-                                    contentDescription = "Next month"
+                                    contentDescription = stringResource(R.string.next_month)
                                 )
                             }
                         },

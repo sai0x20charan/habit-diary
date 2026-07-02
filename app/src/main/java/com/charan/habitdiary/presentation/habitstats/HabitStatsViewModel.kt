@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.charan.habitdiary.R
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime
@@ -87,7 +88,7 @@ class HabitStatsViewModel @AssistedInject constructor(
             startOfDay = _state.value.selectedDate.atTime(LocalTime(0,0)),
             endOfDay = _state.value.selectedDate.atTime(LocalTime(23,59,59,999_999_999))
         ).onFailure { error ->
-            sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to find existing log")))
+            sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_find_existing_log)))
         }.getOrNull()
         logId?.let {
             sendEffect(HabitStatsEffect.OnNavigateToAddLogScreen(it.id))
@@ -98,13 +99,13 @@ class HabitStatsViewModel @AssistedInject constructor(
         val habitLogExists = _state.value.datesWithHabitDone.contains(date)
         if (!habitLogExists){
             val habit = habitRepository.getHabitWithId(_state.value.habitId).onFailure { error ->
-                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load habit details")))
+                sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_load_habit_details)))
             }.getOrNull() ?: return@launch
             val createdTime = date.atTime(DateUtil.getCurrentTime())
             diaryRepository.upsertDailyLog(
                 habit.toDailyLogEntity(date = createdTime)
             ).onFailure { error ->
-                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to log habit")))
+                sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_log_habit)))
             }
         } else{
             val existingLog = diaryRepository.getLoggedHabitFromIdForRange(
@@ -112,11 +113,11 @@ class HabitStatsViewModel @AssistedInject constructor(
                 startOfDay = date.atTime(LocalTime(0,0)),
                 endOfDay = date.atTime(LocalTime(23,59,59,999_999_999))
             ).onFailure { error ->
-                sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to check existing logs")))
+                sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_check_existing_logs)))
             }.getOrNull()
             existingLog?.let {
                 diaryRepository.deleteDailyLog(it.id).onFailure { error ->
-                    sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to delete log")))
+                    sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_delete_log)))
                 }
             }
         }
@@ -134,10 +135,10 @@ class HabitStatsViewModel @AssistedInject constructor(
     private fun observeHabitStats() = viewModelScope.launch {
         combine(
             habitRepository.getHabitWithIdFlow(habitId)
-                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe habit"))) } }
+                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_observe_habit))) } }
                 .map { it.getOrNull() },
             diaryRepository.getAllLogsWithHabitId(habitId)
-                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to observe logs"))) } }
+                .onEach { result -> result.onFailure { error -> sendEffect(HabitStatsEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_observe_logs))) } }
                 .map { it.getOrNull() ?: emptyList() }
         ) { habit, logs ->
             habit to logs

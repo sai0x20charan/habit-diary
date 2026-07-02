@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 import javax.inject.Inject
+import com.charan.habitdiary.R
 
 @HiltViewModel
 class AddHabitViewModel @Inject constructor(
@@ -119,7 +120,7 @@ class AddHabitViewModel @Inject constructor(
             _state.update { it.copy(showDeleteDialog = false) }
             sendEffect(AddHabitEffect.OnNavigateBack(true))
         }.onFailure { error ->
-            sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error deleting habit")))
+            sendEffect(AddHabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.error_deleting_habit)))
         }
     }
 
@@ -157,7 +158,7 @@ class AddHabitViewModel @Inject constructor(
     private fun initializeHabit(habitId : Long?) = viewModelScope.launch{
         if(habitId!=null){
             val habit = habitRepository.getHabitWithId(habitId).onFailure { error ->
-                sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Failed to load habit")))
+                sendEffect(AddHabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.failed_to_load_habit)))
             }.getOrNull() ?: return@launch
             val habitTime = habit.habitTime
             val reminderTime = habit.habitReminder
@@ -216,7 +217,7 @@ class AddHabitViewModel @Inject constructor(
             )
             sendEffect(AddHabitEffect.OnNavigateBack())
         }.onFailure { error ->
-            sendEffect(AddHabitEffect.ShowToast(ToastMessage.Text(error.message ?: "Error saving habit")))
+            sendEffect(AddHabitEffect.ShowToast(error.message?.let { ToastMessage.Text(it) } ?: ToastMessage.Res(R.string.error_saving_habit)))
         }
     }
 

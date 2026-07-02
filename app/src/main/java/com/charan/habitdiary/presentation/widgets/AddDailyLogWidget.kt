@@ -3,6 +3,7 @@ package com.charan.habitdiary.presentation.widgets
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.glance.LocalContext
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,6 +71,7 @@ class AddDailyLogWidgetReceiver : GlanceAppWidgetReceiver() {
 
 @Composable
 private fun AddDailyLogWidgetContent() {
+    val context = LocalContext.current
     val size = LocalSize.current
 
     val isHeightOneCell = size.height < 140.dp
@@ -122,7 +124,7 @@ private fun AddDailyLogWidgetContent() {
             if (!isWidthTwoCells && !isHeightOneCell) {
                 Spacer(GlanceModifier.height(4.dp))
                 Text(
-                    text = "How are you feeling?",
+                    text = context.getString(R.string.how_are_you_feeling),
                     style = TextStyle(
                         fontWeight = FontWeight.Medium,
                         fontSize = 20.sp,
@@ -160,7 +162,7 @@ private fun AddDailyLogWidgetContent() {
             ) {
 
                 Text(
-                    text = "Tap to write entry...",
+                    text = context.getString(R.string.tap_to_write_entry),
                     modifier = GlanceModifier.defaultWeight(),
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
@@ -195,7 +197,7 @@ private fun AddDailyLogWidgetContent() {
 
             AdaptiveButton(
                 modifier = GlanceModifier.defaultWeight(),
-                text = "Photo",
+                text = context.getString(R.string.photo),
                 onClickAction = actionStartActivity(captureImage) ,
                 isWidthTwoCells = isWidthTwoCells,
                 isHeightOneCell = isHeightOneCell,
@@ -206,7 +208,7 @@ private fun AddDailyLogWidgetContent() {
 
             AdaptiveButton(
                 modifier = GlanceModifier.defaultWeight(),
-                text = "Video",
+                text = context.getString(R.string.video),
                 onClickAction =  actionStartActivity(captureVideo) ,
                 isWidthTwoCells = isWidthTwoCells,
                 isHeightOneCell = isHeightOneCell,

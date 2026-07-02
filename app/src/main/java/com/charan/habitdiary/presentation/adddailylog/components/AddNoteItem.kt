@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
+import androidx.compose.ui.res.stringResource
+import com.charan.habitdiary.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -59,7 +61,7 @@ fun AddNoteItem(
                 Box {
                     if (state.annotatedString.isEmpty()) {
                         Text(
-                            text = "Add a note...",
+                            text = stringResource(R.string.add_note_placeholder),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

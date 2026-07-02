@@ -8,10 +8,13 @@ import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.HabitRepository
 import com.charan.habitdiary.core.utils.DateUtil
+import com.charan.habitdiary.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import com.charan.habitdiary.data.repository.DataStoreRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -21,11 +24,12 @@ class NotificationReceiver : BroadcastReceiver() {
     @Inject lateinit var diaryRepository: DiaryRepository
 
     @Inject lateinit var notificationScheduler: NotificationScheduler
+    @Inject lateinit var dataStoreRepository: DataStoreRepository
     override fun onReceive(context: Context?, intent: Intent?) {
         val pendingResult = goAsync()
         val appContext = context?.applicationContext
-
-        CoroutineScope(Dispatchers.IO).launch {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
             try {
                 when(intent?.action){
                     IntentActions.SHOW_NOTIFICATION.name -> {
@@ -47,8 +51,8 @@ class NotificationReceiver : BroadcastReceiver() {
                             
                             if(habitLog == null){
                                 notificationHelper.showNotification(
-                                    title = "Habit Reminder",
-                                    message = "It's time for your habit: ${habit.habitName}",
+                                    title = appContext.getString(R.string.notification_reminder_title),
+                                    message = appContext.getString(R.string.notification_habit_reminder_message, habit.habitName),
                                     habitId = habit.id
                                 )
                             }
@@ -90,6 +94,30 @@ class NotificationReceiver : BroadcastReceiver() {
                             }
                         }
                         notificationHelper.cancelNotification(habitId)
+                    }
+
+                    IntentActions.SHOW_DAILY_LOG_REMINDER.name -> {
+                        if (appContext != null) {
+                            val isEnabled = dataStoreRepository.getDailyLogReminderEnabled.first()
+                            val time = dataStoreRepository.getDailyLogReminderTime.first()
+
+                            if (isEnabled) {
+                                val logsResult = diaryRepository.getLoggedHabitIdsForRange().first()
+                                val logs = logsResult.getOrNull() ?: emptyList()
+                                val generalLogExists = logs.any { it.habitId == null }
+
+                                if (!generalLogExists) {
+                                    notificationHelper.showDailyLogReminderNotification(
+                                        title = appContext.getString(R.string.notification_daily_log_reminder_title),
+                                        message = appContext.getString(R.string.notification_daily_log_reminder_message)
+                                    )
+                                }
+                                notificationScheduler.scheduleDailyLogReminder(
+                                    time = time,
+                                    isReminderEnabled = true
+                                )
+                            }
+                        }
                     }
 
                 }
