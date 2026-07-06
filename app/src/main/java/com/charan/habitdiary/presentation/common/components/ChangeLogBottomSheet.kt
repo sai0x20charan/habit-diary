@@ -15,7 +15,9 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -42,7 +44,7 @@ fun ChangeLogBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
     ) {
         Column(
             modifier = Modifier
@@ -80,6 +82,7 @@ fun ChangeLogBottomSheet(
                             )
                             Spacer(Modifier.height(6.dp))
                         }
+
                         is ChangeLogBlock.BulletItem -> {
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 3.dp),
@@ -95,10 +98,11 @@ fun ChangeLogBottomSheet(
                                     style = MaterialTheme.typography.bodyMediumEmphasized,
                                     color = MaterialTheme.colorScheme.onSurface,
 
-                                )
+                                    )
 
                             }
                         }
+
                         is ChangeLogBlock.Paragraph -> {
                             Text(
                                 text = block.text,

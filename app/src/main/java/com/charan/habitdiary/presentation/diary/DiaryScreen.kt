@@ -192,8 +192,6 @@ fun DiaryScreen(
                 DiaryEffect.NavigateToAllEntries -> {
                     onNavigateToAllEntries()
                 }
-
-                else -> {}
             }
         }
     }

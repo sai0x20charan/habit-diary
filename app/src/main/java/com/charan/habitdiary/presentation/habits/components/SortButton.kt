@@ -43,7 +43,7 @@ fun SortButton(
             items = HabitSortType.entries.map { it.toResId() },
             selectedItem = selectedSortTypeRes,
             onItemSelected = {
-                onSortSelected(HabitSortType.fromResId(it as Int))
+                onSortSelected(HabitSortType.fromResId(it))
             },
             isExpanded = isExpanded,
             onDismiss = onClick
