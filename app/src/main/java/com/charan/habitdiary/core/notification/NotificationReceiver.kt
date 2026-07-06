@@ -33,7 +33,7 @@ class NotificationReceiver : BroadcastReceiver() {
             try {
                 when(intent?.action){
                     IntentActions.SHOW_NOTIFICATION.name -> {
-                        val habitId = intent?.getLongExtra("habitId", -1) ?: -1
+                        val habitId = intent.getLongExtra("habitId", -1)
                         if (habitId != -1L && appContext != null) {
                             val habitResult = habitRepository.getHabitWithId(habitId)
                             habitResult.onFailure {
@@ -66,7 +66,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     }
 
                     IntentActions.MARK_AS_DONE.name -> {
-                        val habitId = intent?.getLongExtra("habitId", -1) ?: -1
+                        val habitId = intent.getLongExtra("habitId", -1)
                         if (habitId != -1L) {
                             val habitResult = habitRepository.getHabitWithId(habitId)
                             habitResult.onFailure {

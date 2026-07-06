@@ -87,18 +87,6 @@ fun ImagePickOptionsBottomSheet(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-fun ImagePickOptionsBottomSheetPreview() {
-    ImagePickOptionsBottomSheet(
-        onImageFromGalleryClick = {},
-        onImageFromCameraClick = {},
-        onDismissRequest = {},
-        sheetState = rememberModalBottomSheetState()
-    )
-}
-
 data class ImagePickOptions(
     val title : String,
     val icon : ImageVector,

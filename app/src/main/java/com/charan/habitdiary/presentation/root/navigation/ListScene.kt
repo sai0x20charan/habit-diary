@@ -56,9 +56,9 @@ class ListDetailScene<T : Any>(
                     ) {
                         AnimatedContent(
                             targetState = detailEntry,
-                            contentKey = { entry -> entry?.contentKey },
+                            contentKey = { entry -> entry.contentKey },
                         ) { entry ->
-                            entry?.Content()
+                            entry.Content()
                         }
                     }
                 }
