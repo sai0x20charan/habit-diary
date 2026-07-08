@@ -9,6 +9,7 @@ import androidx.room.Update
 import androidx.room.Upsert
 import com.charan.habitdiary.data.local.entity.DailyLogEntity
 import com.charan.habitdiary.data.local.model.DailyLogWithHabit
+import com.charan.habitdiary.data.local.model.DailyLogWithMedia
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -75,6 +76,10 @@ interface DailyLogDao {
     @Query("SELECT * FROM daily_log_entity WHERE isDeleted = 0 ORDER BY createdAt ASC")
     @Transaction
     fun getOldestLogWithHabit() : Flow<List<DailyLogWithHabit>>
+
+    @Transaction
+    @Query("SELECT * FROM daily_log_entity WHERE createdAt >= :start and createdAt <= :end and isDeleted = 0")
+    suspend fun getDailyLogWithMediaForDateRange(start: LocalDateTime, end: LocalDateTime): List<DailyLogWithMedia>
 
 
 

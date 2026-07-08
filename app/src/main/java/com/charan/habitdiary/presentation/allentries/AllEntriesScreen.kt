@@ -40,7 +40,7 @@ import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
 import com.charan.habitdiary.presentation.common.components.DayLogEntryItem
 import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
 import com.charan.habitdiary.presentation.common.mapper.toResId
-import com.charan.habitdiary.presentation.settings.components.SectionHeader
+import com.charan.habitdiary.presentation.common.components.SectionHeader
 import com.charan.habitdiary.presentation.common.components.LogSortButton
 import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
 import kotlinx.coroutines.flow.collectLatest

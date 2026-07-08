@@ -2,6 +2,7 @@ package com.charan.habitdiary.presentation.common.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -51,7 +53,8 @@ fun CustomCarouselImageItem(
     onRemoveClick: (String) -> Unit,
     isEdit: Boolean = false,
     modifier: Modifier = Modifier,
-    onImageOpen: (String) -> Unit = {}
+    onImageOpen: (String) -> Unit = {},
+    overlayContent: @Composable (BoxScope.(index: Int) -> Unit)? = null,
 ) {
     if (mediaPaths.isEmpty()) return
 
@@ -118,6 +121,9 @@ fun CustomCarouselImageItem(
                             modifier = Modifier.size(18.dp)
                         )
                     }
+                }
+                if (overlayContent != null) {
+                    overlayContent(index)
                 }
             }
         }

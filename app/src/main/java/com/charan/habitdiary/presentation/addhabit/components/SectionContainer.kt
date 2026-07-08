@@ -10,7 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.charan.habitdiary.presentation.common.components.SectionHeading
+import com.charan.habitdiary.presentation.common.components.SectionHeader
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -24,7 +24,7 @@ fun SectionContainer(
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 10.dp)
     ) {
-        SectionHeading(title)
+        SectionHeader(title)
         Spacer(Modifier.height(8.dp))
         content()
     }

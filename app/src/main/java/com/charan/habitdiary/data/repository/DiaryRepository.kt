@@ -5,6 +5,7 @@ import com.charan.habitdiary.data.local.entity.DailyLogMediaEntity
 import com.charan.habitdiary.data.local.model.DailyLogWithHabit
 import com.charan.habitdiary.data.model.enums.DailyLogSortType
 import com.charan.habitdiary.core.utils.DateUtil
+import com.charan.habitdiary.data.local.model.DailyLogWithMedia
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -59,4 +60,9 @@ interface DiaryRepository {
     fun getAllLogsWithHabit(
         sortBy: DailyLogSortType = DailyLogSortType.NEWEST_FIRST
     ) : Flow<Result<List<DailyLogWithHabit>>>
+
+    suspend fun getDiaryMediaForDateRange(
+        start: LocalDate,
+        end : LocalDate,
+    ) : Result<List<DailyLogWithMedia>>
 }

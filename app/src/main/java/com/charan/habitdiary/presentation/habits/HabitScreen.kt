@@ -33,7 +33,6 @@ import com.charan.habitdiary.core.utils.showToast
 import com.charan.habitdiary.presentation.common.mapper.toResId
 import com.charan.habitdiary.presentation.common.components.CustomDropDown
 import com.charan.habitdiary.presentation.common.components.CustomMediumTopBar
-import com.charan.habitdiary.presentation.common.components.SectionHeading
 import com.charan.habitdiary.presentation.common.components.toScreenContentPadding
 import com.charan.habitdiary.presentation.habits.components.EmptyStateItem
 import com.charan.habitdiary.presentation.habits.components.HabitItemCard
