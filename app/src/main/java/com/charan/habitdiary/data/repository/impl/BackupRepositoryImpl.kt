@@ -31,7 +31,7 @@ import java.util.zip.ZipOutputStream
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
-import okio.Deflater
+import java.util.zip.Deflater
 import javax.inject.Inject
 
 

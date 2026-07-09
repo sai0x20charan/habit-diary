@@ -197,7 +197,7 @@ fun SettingsScreen(
 
     if(state.isExporting || state.isImporting){
         LoadingDialog(
-            title = if(state.isExporting) "Exporting Data" else "Importing Data",
+            title = if(state.isExporting) stringResource(R.string.exporting_data) else stringResource(R.string.importing_data),
 
         )
 
