@@ -66,6 +66,7 @@ import com.charan.habitdiary.core.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
 import com.charan.habitdiary.core.utils.launchFeedbackEmail
 import com.charan.habitdiary.core.utils.launchUrl
+import com.charan.habitdiary.presentation.common.components.LoadingDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalPermissionsApi::class
@@ -179,6 +180,14 @@ fun SettingsScreen(
             selectedTime = state.dailyLogReminderTime,
             is24HourFormat = state.is24HourFormat
         )
+    }
+
+    if(state.isExporting || state.isImporting){
+        LoadingDialog(
+            title = if(state.isExporting) stringResource(R.string.exporting_data) else stringResource(R.string.importing_data),
+
+        )
+
     }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -320,13 +329,6 @@ fun SettingsScreen(
                     onClick = {
                         viewModel.onEvent(SettingsEvent.OnExportDataClick)
                     },
-                    trailingContent = {
-                        if(state.isExporting){
-                            ContainedLoadingIndicator(
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    },
                     leadingContent = {
                         Icon(
                             imageVector = Icons.Rounded.Upload,
@@ -342,13 +344,6 @@ fun SettingsScreen(
                     },
                     onClick = {
                         viewModel.onEvent(SettingsEvent.OnImportDataClick)
-                    },
-                    trailingContent = {
-                        if(state.isImporting){
-                            ContainedLoadingIndicator(
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
                     },
                     leadingContent = {
                         Icon(

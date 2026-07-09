@@ -16,16 +16,22 @@ import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.H
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl.Companion.HABIT_DIARY_MEDIA_DIR
 import com.charan.habitdiary.core.notification.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.util.UUID
+import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import java.util.zip.Deflater
 import javax.inject.Inject
 
 
@@ -48,46 +54,49 @@ class BackupRepositoryImpl @Inject constructor(
 
         const val HABIT_MEDIA_DIR = "habitMedia/"
         const val HABIT_IMAGES_DIR = "habitImages/"
+
+        const val COPY_BUFFER_SIZE = 1024 * 128
     }
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun backupData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
         if (uri == null) {
             return@withContext Result.failure(Exception("No File Found"))
         }
         return@withContext try {
-            val habits = habitRepository.getAllHabits().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
-            val dailyLogs = diaryRepository.getAllDailyLogs().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
-            val media = diaryRepository.getAllMedia().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val habitsDeferred = async { habitRepository.getAllHabits() }
+            val dailyLogsDeferred = async { diaryRepository.getAllDailyLogs() }
+            val mediaDeferred = async { diaryRepository.getAllMedia() }
+
+            val habits = habitsDeferred.await().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val dailyLogs = dailyLogsDeferred.await().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
+            val media = mediaDeferred.await().onFailure { return@withContext Result.failure(it) }.getOrNull() ?: emptyList()
             val metaData = BackupMetaData(
                 versionCode = BuildConfig.VERSION_CODE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
                 createdAt = System.currentTimeMillis()
             )
 
-            val habitJson = Json.encodeToString(habits)
-            val dailyLogJson = Json.encodeToString(dailyLogs)
-            val mediaJson = Json.encodeToString(media)
-            val metaJson = Json.encodeToString(metaData)
-
             val outputStream = context.contentResolver.openOutputStream(uri)
                 ?: throw Exception("Failed to open output stream")
 
             ZipOutputStream(BufferedOutputStream(outputStream)).use { zip ->
+                zip.setLevel(Deflater.BEST_SPEED)
 
                 zip.putNextEntry(ZipEntry(META_FILE))
-                zip.write(metaJson.toByteArray())
+                Json.encodeToStream(metaData, zip)
                 zip.closeEntry()
 
 
                 zip.putNextEntry(ZipEntry(HABIT_FILE))
-                zip.write(habitJson.toByteArray())
+                Json.encodeToStream(habits, zip)
                 zip.closeEntry()
 
                 zip.putNextEntry(ZipEntry(DAILY_LOG_FILE))
-                zip.write(dailyLogJson.toByteArray())
+                Json.encodeToStream(dailyLogs, zip)
                 zip.closeEntry()
 
                 zip.putNextEntry(ZipEntry(MEDIA_FILE))
-                zip.write(mediaJson.toByteArray())
+                Json.encodeToStream(media, zip)
                 zip.closeEntry()
 
                 val mediaFiles = File(context.filesDir, HABIT_DIARY_MEDIA_DIR)
@@ -95,21 +104,13 @@ class BackupRepositoryImpl @Inject constructor(
 
                 if (mediaFiles.exists()) {
                     mediaFiles.listFiles()?.forEach { file ->
-                        zip.putNextEntry(ZipEntry("$HABIT_MEDIA_DIR${file.name}"))
-                        file.inputStream().use { input ->
-                            input.copyTo(zip)
-                        }
-                        zip.closeEntry()
+                        zip.writeStoredFile(file, "$HABIT_MEDIA_DIR${file.name}")
                     }
                 }
 
                 if (oldFiles.exists()) {
                     oldFiles.listFiles()?.forEach { file ->
-                        zip.putNextEntry(ZipEntry("$HABIT_IMAGES_DIR${file.name}"))
-                        file.inputStream().use { input ->
-                            input.copyTo(zip)
-                        }
-                        zip.closeEntry()
+                        zip.writeStoredFile(file, "$HABIT_IMAGES_DIR${file.name}")
                     }
                 }
 
@@ -120,6 +121,7 @@ class BackupRepositoryImpl @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun importData(uri: Uri?): Result<Boolean> = withContext(Dispatchers.IO) {
         if (uri == null) {
             return@withContext Result.failure(Exception("No File Found"))
@@ -136,27 +138,19 @@ class BackupRepositoryImpl @Inject constructor(
             ZipInputStream(BufferedInputStream(inputStream)).use { zip ->
                 var entry = zip.nextEntry
 
+
                 while (entry != null) {
                     val entryName = entry.name
 
                     when {
                         entryName == HABIT_FILE -> {
-                            val json = zip.readBytes().toString(Charsets.UTF_8)
-                            if (json.isNotEmpty()) {
-                                importedHabits = Json.decodeFromString(json)
-                            }
+                            importedHabits = Json.decodeFromStream(zip)
                         }
                         entryName == DAILY_LOG_FILE -> {
-                            val json = zip.readBytes().toString(Charsets.UTF_8)
-                            if (json.isNotEmpty()) {
-                                importedDailyLogs = Json.decodeFromString(json)
-                            }
+                            importedDailyLogs = Json.decodeFromStream(zip)
                         }
                         entryName == MEDIA_FILE -> {
-                            val json = zip.readBytes().toString(Charsets.UTF_8)
-                            if (json.isNotEmpty()) {
-                                importedMediaEntities = Json.decodeFromString(json)
-                            }
+                            importedMediaEntities = Json.decodeFromStream(zip)
                         }
                         entryName.startsWith(HABIT_MEDIA_DIR) ||
                                 entryName.startsWith(HABIT_IMAGES_DIR) -> {
@@ -169,8 +163,8 @@ class BackupRepositoryImpl @Inject constructor(
 
                             val newFile = File(targetDir, newFileName)
 
-                            BufferedOutputStream(newFile.outputStream()).use { output ->
-                                zip.copyTo(output)
+                            BufferedOutputStream(newFile.outputStream(), COPY_BUFFER_SIZE).use { output ->
+                                zip.copyTo(output, bufferSize = COPY_BUFFER_SIZE)
                             }
 
                             fileNameMapping[originalFileName] = newFile.absolutePath
@@ -205,7 +199,11 @@ class BackupRepositoryImpl @Inject constructor(
             val newDailyLogIdMap = mutableMapOf<Long, Long>()
             if (importedDailyLogs.isNotEmpty()) {
                 val validLogPairs = importedDailyLogs.mapNotNull { oldLog ->
-                    val newHabitId = habitIdMap[oldLog.habitId] ?: return@mapNotNull null
+                    val newHabitId = if (oldLog.habitId != null) {
+                        habitIdMap[oldLog.habitId] ?: return@mapNotNull null
+                    } else {
+                        null
+                    }
                     oldLog to oldLog.copy(
                         id = 0,
                         habitId = newHabitId
@@ -248,4 +246,27 @@ class BackupRepositoryImpl @Inject constructor(
             val appName = context.applicationInfo.loadLabel(context.packageManager)
             return "${appName}_Backup_${System.currentTimeMillis()}.zip"
         }
+
+    private fun crc32Of(file: File): Long {
+        val crc = CRC32()
+        file.inputStream().use { input ->
+            val buffer = ByteArray(COPY_BUFFER_SIZE)
+            var read: Int
+            while (input.read(buffer).also { read = it } != -1) {
+                crc.update(buffer, 0, read)
+            }
+        }
+        return crc.value
+    }
+
+    private fun ZipOutputStream.writeStoredFile(file: File, entryName: String) {
+        val entry = ZipEntry(entryName).apply {
+            method = ZipEntry.STORED
+            size = file.length()
+            crc = crc32Of(file)
+        }
+        putNextEntry(entry)
+        file.inputStream().use { it.copyTo(this, bufferSize = COPY_BUFFER_SIZE) }
+        closeEntry()
+    }
 }

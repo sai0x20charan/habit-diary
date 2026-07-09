@@ -202,4 +202,6 @@
     <string name="one_year_ago">One Year Ago</string>
     <string name="six_months_ago">6 Months Ago</string>
     <string name="three_months_ago">3 Months Ago</string>
+    <string name="exporting_data">Exporting Data</string>
+    <string name="importing_data">Importing Data</string>
 </resources>

@@ -181,4 +181,6 @@
     <string name="notification_daily_log_channel_description">डायरी प्रविष्टि अनुस्मारक</string>
     <string name="notification_daily_log_reminder_title">डायरी प्रविष्टि अनुस्मारक</string>
     <string name="notification_daily_log_reminder_message">आज अपनी डायरी प्रविष्टि लिखना न भूलें!</string>
+    <string name="exporting_data">डेटा निर्यात किया जा रहा है</string>
+    <string name="importing_data">डेटा आयात किया जा रहा है</string>
 </resources>
