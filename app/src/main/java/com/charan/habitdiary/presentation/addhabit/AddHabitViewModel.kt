@@ -211,7 +211,7 @@ class AddHabitViewModel @Inject constructor(
         habitRepository.upsertHabit(_state.value.toHabitEntity()).onSuccess { id ->
             notificationScheduler.scheduleReminder(
                 habitId = id,
-                time = _state.value.habitReminderTime ?: LocalTime(8,0),
+                time = _state.value.habitReminderTime,
                 isReminderEnabled = _state.value.isReminderEnabled,
                 frequency = _state.value.habitFrequency,
             )

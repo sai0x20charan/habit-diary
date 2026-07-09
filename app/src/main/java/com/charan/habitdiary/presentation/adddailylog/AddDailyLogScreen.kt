@@ -14,7 +14,9 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,7 +79,7 @@ fun AddDailyLogScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val richTextState = rememberRichTextState()
-    val imagePickOptionsBottomSheetState = rememberModalBottomSheetState()
+    val imagePickOptionsBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris->
         if(uris.isNotEmpty()){

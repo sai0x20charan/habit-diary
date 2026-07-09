@@ -181,4 +181,6 @@
     <string name="notification_daily_log_channel_description">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_title">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_message">Don\'t forget to write your diary entry today!</string>
+    <string name="exporting_data">Exporting Data</string>
+    <string name="importing_data">Importing Data</string>
 </resources>
