@@ -1,8 +1,6 @@
-## New Features
-- Added a daily diary entry reminder feature in the settings.
-
 ## Improvements
-- Fixed localization support for app widgets.
-
+- Add a full-screen loading dialog to display progress when exporting or importing data.
+- Improved import and export performance.
+- 
 ## Bug Fixes
-- Fixed image scrolling behavior in the media viewer.
+- Fixed diary entries missing after importing a backup.
