@@ -190,8 +190,8 @@
     <string name="total_media">Total Media</string>
     <string name="logs_unit">Logs</string>
     <string name="media_unit">Media</string>
-    <string name="diary_status">Diary Status</string>
-    <string name="habit_status">Habit Status</string>
+    <string name="diary_stats">Diary Stats</string>
+    <string name="habit_stats">Habit Stats</string>
     <string name="total_habits">Total Habits</string>
     <string name="total_completions">Total Completions</string>
     <string name="most_consistent_habit">Most Consistent Habit</string>

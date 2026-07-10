@@ -39,7 +39,8 @@ class JourneyViewModel @Inject constructor(
 
     init {
         getFlashbackMedia()
-        observeStats()
+        observeDiaryStats()
+        observeHabitStats()
 
     }
 
@@ -72,47 +73,37 @@ class JourneyViewModel @Inject constructor(
         }
     }
 
-    private fun observeStats() = viewModelScope.launch {
-        combine(
-            diaryRepository.getAllDailyLogsFlow()
-                .map { it.getOrNull() ?: emptyList() },
-            habitRepository.getAllHabitsFlow()
-                .map { it.getOrNull() ?: emptyList() }
-        ) { logs, habits ->
-            logs to habits
-        }.collectLatest { (allLogs, allHabits) ->
-            val activeLogs = allLogs.filter { !it.isDeleted }
-            val activeHabits = allHabits.filter { !it.isDeleted }
-
-            // 1. Diary Stats
-            val diaryStreak = activeLogs.getDiaryStreak()
-            val bestDiaryStreak = activeLogs.getBestDiaryStreak()
-            val totalMediaCount = diaryRepository.getAllMedia().getOrNull()?.size ?: 0
-
-            // 2. Habits Stats
-            val habitLogs = activeLogs.filter { it.habitId != null }
-            val activeHabitIds = activeHabits.map { it.id }.toSet()
-            val activeHabitLogs = habitLogs.filter { it.habitId in activeHabitIds }
-
-            val habitStreak = activeHabitLogs.getDiaryStreak()
-            val bestHabitStreak = activeHabitLogs.getBestDiaryStreak()
-
-            _state.update {
-                it.copy(
-                    diaryStats = DiaryStats(
-                        currentStreak = diaryStreak,
-                        bestStreak = bestDiaryStreak,
-                        totalLogs = activeLogs.size,
-                        totalMedia = totalMediaCount
-                    ),
-                    habitsStats = HabitsStats(
-                        totalHabits = activeHabits.size,
-                        totalCompletions = activeHabitLogs.size,
-                        currentStreak = habitStreak,
-                        bestStreak = bestHabitStreak
-                    )
+    private fun observeDiaryStats() = viewModelScope.launch {
+        val diaryData = diaryRepository.getAllDailyLogs().getOrNull() ?: emptyList()
+        _state.update {
+            it.copy(
+                diaryStats = DiaryStats(
+                    currentStreak = diaryData.getDiaryStreak(),
+                    bestStreak = diaryData.getBestDiaryStreak(),
+                    totalLogs = diaryData.size,
+                    totalMedia = diaryRepository.getAllMedia().getOrNull()?.size ?: 0
                 )
-            }
+            )
+        }
+    }
+
+    private fun observeHabitStats() = viewModelScope.launch {
+        val habitData = habitRepository.getAllHabits().getOrNull() ?: emptyList()
+        val habitLogs = diaryRepository.getAllLogsWithHabit().getOrNull() ?: emptyList()
+        val activeHabitIds = habitData.map { it.id }.toSet()
+        val activeHabitLogs = habitLogs
+            .filter { it.dailyLogEntity.habitId in activeHabitIds }
+            .map { it.dailyLogEntity }
+
+        _state.update {
+            it.copy(
+                habitsStats = HabitsStats(
+                    totalHabits = habitData.size,
+                    totalCompletions = activeHabitLogs.size,
+                    currentStreak = activeHabitLogs.getDiaryStreak(),
+                    bestStreak = activeHabitLogs.getBestDiaryStreak()
+                )
+            )
         }
     }
 

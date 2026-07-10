@@ -150,4 +150,10 @@ class DiaryRepositoryImpl @Inject constructor(
             end.getEndOfDay()
         )
     }
+
+    override suspend fun getAllLogsWithHabit(): Result<List<DailyLogWithHabit>> {
+        return suspendRunCatching {
+            dailyLogDao.getAllLogsWithHabit()
+        }
+    }
 }

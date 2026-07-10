@@ -65,4 +65,6 @@ interface DiaryRepository {
         start: LocalDate,
         end : LocalDate,
     ) : Result<List<DailyLogWithMedia>>
+
+    suspend fun getAllLogsWithHabit() : Result<List<DailyLogWithHabit>>
 }

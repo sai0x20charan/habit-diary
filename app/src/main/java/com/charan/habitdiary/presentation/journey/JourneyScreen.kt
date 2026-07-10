@@ -129,7 +129,7 @@ fun JourneyScreen(
 
             item {
                 SectionHeader(
-                    title = stringResource(R.string.diary_status),
+                    title = stringResource(R.string.diary_stats),
                 )
             }
             item {
@@ -188,7 +188,7 @@ fun JourneyScreen(
 
             item {
                 SectionHeader(
-                    title = stringResource(R.string.habit_status),
+                    title = stringResource(R.string.habit_stats),
                 )
             }
             item {
