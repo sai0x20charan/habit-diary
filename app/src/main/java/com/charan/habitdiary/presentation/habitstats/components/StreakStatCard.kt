@@ -36,9 +36,10 @@ import androidx.room.util.copy
 fun StreakStatCard(
     modifier: Modifier = Modifier,
     title: String,
-    value: Int,
+    value: String,
     icon: ImageVector,
     iconTint: Color,
+    unit: String = ""
 ) {
     ElevatedCard(
         modifier = modifier,
@@ -81,22 +82,35 @@ fun StreakStatCard(
                 Row(
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Text(
-                        text = value.toString(),
-                        style = MaterialTheme.typography.displaySmallEmphasized.copy(
+                    val textStyle = if (value.length > 10) {
+                        MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
-                        ),
+                        )
+                    } else if (value.length > 5) {
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        MaterialTheme.typography.displaySmallEmphasized.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Text(
+                        text = value,
+                        style = textStyle,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    if (unit.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(6.dp))
 
-                    Text(
-                        text = "Days",
-                        style = MaterialTheme.typography.bodyMediumEmphasized,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
+                        Text(
+                            text = unit,
+                            style = MaterialTheme.typography.bodyMediumEmphasized,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+                    }
                 }
             }
         }

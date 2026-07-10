@@ -181,6 +181,27 @@
     <string name="notification_daily_log_channel_description">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_title">Diary Entry Reminder</string>
     <string name="notification_daily_log_reminder_message">Don\'t forget to write your diary entry today!</string>
+    <string name="journey">Journey</string>
+    <string name="no_flashback_memories">No flashback memories yet. Log daily moments to see memories from 3 months, 6 months, and a year ago!</string>
+    <string name="one_year_back">One Year Back</string>
+    <string name="six_months_back">Six Months Back</string>
+    <string name="three_months_back">Three Months Back</string>
+    <string name="total_logs">Total Logs</string>
+    <string name="total_media">Total Media</string>
+    <string name="logs_unit">Logs</string>
+    <string name="media_unit">Media</string>
+    <string name="diary_stats">Diary Stats</string>
+    <string name="habit_stats">Habit Stats</string>
+    <string name="total_habits">Total Habits</string>
+    <string name="total_completions">Total Completions</string>
+    <string name="most_consistent_habit">Most Consistent Habit</string>
+    <string name="habits_unit">Habits</string>
+    <string name="completions_unit">Completions</string>
+    <string name="none">None</string>
+    <string name="flashback">Flashback</string>
+    <string name="one_year_ago">One Year Ago</string>
+    <string name="six_months_ago">6 Months Ago</string>
+    <string name="three_months_ago">3 Months Ago</string>
     <string name="exporting_data">Exporting Data</string>
     <string name="importing_data">Importing Data</string>
 </resources>

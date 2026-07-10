@@ -2,8 +2,10 @@ package com.charan.habitdiary.core.utils
 
 
 import android.util.Log
+import com.kizitonwose.calendar.core.minusDays
 import com.kizitonwose.calendar.core.minusMonths
 import com.kizitonwose.calendar.core.now
+import com.kizitonwose.calendar.core.plusDays
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -170,5 +172,26 @@ object DateUtil {
             style,
             Locale.getDefault()
         )
+    }
+
+    fun LocalDate.getOneYearBackRange() : Pair<LocalDate, LocalDate> {
+        val targetDate = this.minusMonths(12)
+        val startDate = targetDate.minusDays(14)
+        val endDate = targetDate.plusDays(14)
+        return Pair(startDate, endDate)
+    }
+
+    fun LocalDate.getThreeMonthsBackRange() : Pair<LocalDate, LocalDate> {
+        val targetDate = this.minusMonths(3)
+        val startDate = targetDate.minusDays(7)
+        val endDate = targetDate.plusDays(7)
+        return Pair(startDate, endDate)
+    }
+
+    fun LocalDate.getSixMonthsBackRange() : Pair<LocalDate, LocalDate> {
+        val targetDate = this.minusMonths(6)
+        val startDate = targetDate.minusDays(14)
+        val endDate = targetDate.plusDays(14)
+        return Pair(startDate, endDate)
     }
 }

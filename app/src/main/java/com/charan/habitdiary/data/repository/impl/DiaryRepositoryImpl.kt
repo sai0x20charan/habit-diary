@@ -14,6 +14,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import javax.inject.Inject
 import com.charan.habitdiary.core.utils.suspendRunCatching
+import com.charan.habitdiary.data.local.model.DailyLogWithMedia
+import com.charan.habitdiary.core.utils.DateUtil.getStartOfDay
+import com.charan.habitdiary.core.utils.DateUtil.getEndOfDay
 
 class DiaryRepositoryImpl @Inject constructor(
     private val dailyLogDao: DailyLogDao,
@@ -136,5 +139,21 @@ class DiaryRepositoryImpl @Inject constructor(
             Result.success(mapped)
         }.catch { emit(Result.failure(it)) }
 
+    }
+
+    override suspend fun getDiaryMediaForDateRange(
+        start: LocalDate,
+        end: LocalDate
+    ): Result<List<DailyLogWithMedia>> = suspendRunCatching {
+        dailyLogDao.getDailyLogWithMediaForDateRange(
+            start.getStartOfDay(),
+            end.getEndOfDay()
+        )
+    }
+
+    override suspend fun getAllLogsWithHabit(): Result<List<DailyLogWithHabit>> {
+        return suspendRunCatching {
+            dailyLogDao.getAllLogsWithHabit()
+        }
     }
 }
