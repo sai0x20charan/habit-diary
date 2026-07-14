@@ -14,6 +14,9 @@ sealed class BottomBarNavDestinations : NavKey{
 
     @Serializable
     object Settings : BottomBarNavDestinations()
+
+    @Serializable
+    object Journey : BottomBarNavDestinations()
 }
 
 sealed class Destinations : NavKey {

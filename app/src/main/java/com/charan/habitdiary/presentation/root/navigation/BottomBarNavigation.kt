@@ -44,6 +44,9 @@ import com.charan.habitdiary.presentation.diary.DiaryScreen
 import com.charan.habitdiary.presentation.habits.HabitScreen
 import com.charan.habitdiary.presentation.settings.SettingsScreen
 import com.charan.habitdiary.presentation.common.model.MediaItemUIModel
+import com.charan.habitdiary.presentation.journey.JourneyScreen
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.rounded.Explore
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -121,6 +124,11 @@ fun BottomBarNavigation(
             BottomNavItem.CALENDAR -> {
                 bottomBarBackStack.clear()
                 bottomBarBackStack.add(BottomBarNavDestinations.Calender)
+            }
+
+            BottomNavItem.JOURNEY -> {
+                bottomBarBackStack.clear()
+                bottomBarBackStack.add(BottomBarNavDestinations.Journey)
             }
 
             BottomNavItem.SETTINGS -> {
@@ -221,6 +229,18 @@ fun BottomBarNavigation(
                             }
                         )
                     }
+
+                    is BottomBarNavDestinations.Journey -> NavEntry(key) {
+                        JourneyScreen(
+                            onImageClick = { allImages, currentImage, showLogEntryButton ->
+                                onImageOpen(
+                                    allImages,
+                                    currentImage,
+                                    showLogEntryButton
+                                )
+                            }
+                        )
+                    }
                     else -> NavEntry(key) { Text("Unknown route") }
 
                 }
@@ -246,6 +266,11 @@ enum class BottomNavItem(
         title = R.string.diary,
         selectedIcon = Icons.Rounded.ImportContacts,
         unselectedIcon = Icons.Outlined.ImportContacts,
+    ),
+    JOURNEY(
+        title = R.string.journey,
+        selectedIcon = Icons.Rounded.Explore,
+        unselectedIcon = Icons.Outlined.Explore,
     ),
     SETTINGS(
         title = R.string.settings,

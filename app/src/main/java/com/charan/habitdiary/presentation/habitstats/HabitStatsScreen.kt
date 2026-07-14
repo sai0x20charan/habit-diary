@@ -183,17 +183,19 @@ fun HabitStatsScreen(
                     StreakStatCard(
                         modifier = Modifier.weight(1f),
                         title = stringResource(R.string.current),
-                        value = state.currentStreak,
+                        value = state.currentStreak.toString(),
                         icon = Icons.Default.LocalFireDepartment,
-                        iconTint = MaterialTheme.colorScheme.primary
+                        iconTint = MaterialTheme.colorScheme.primary,
+                        unit = stringResource(R.string.days)
                     )
 
                     StreakStatCard(
                         modifier = Modifier.weight(1f),
                         title = stringResource(R.string.best),
-                        value = state.bestStreak,
+                        value = state.bestStreak.toString(),
                         icon = Icons.Default.EmojiEvents,
-                        iconTint = MaterialTheme.colorScheme.tertiary
+                        iconTint = MaterialTheme.colorScheme.tertiary,
+                        unit = stringResource(R.string.days)
                     )
                 }
 
