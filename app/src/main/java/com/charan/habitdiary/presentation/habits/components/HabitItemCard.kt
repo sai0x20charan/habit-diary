@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -90,7 +91,7 @@ fun HabitItemCard(
         }
     }
 
-    ElevatedCard(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
@@ -107,7 +108,9 @@ fun HabitItemCard(
             )
             .animateContentSize(),
         onClick = onClick,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isCompleted) 1.dp else 5.dp)
+        colors = CardDefaults.elevatedCardColors(),
+
+
     ) {
         Column(
             modifier = Modifier
