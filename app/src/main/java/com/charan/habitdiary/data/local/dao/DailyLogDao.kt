@@ -87,6 +87,10 @@ interface DailyLogDao {
     @Query("SELECT * FROM daily_log_entity WHERE isDeleted = 0")
     suspend fun getAllLogsWithHabit() : List<DailyLogWithHabit>
 
+    @Transaction
+    @Query("SELECT * FROM daily_log_entity WHERE createdAt >= :start and createdAt <= :end and isDeleted = 0")
+    suspend fun getAllLogsWithHabitForDateRange(start: LocalDateTime, end: LocalDateTime): List<DailyLogWithHabit>
+
 
 
 }

@@ -23,13 +23,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import com.charan.habitdiary.R
+import com.charan.habitdiary.core.utils.DateUtil.getOneWeekBackRange
+import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
+import com.charan.habitdiary.data.model.AiResponseEvent
+import com.charan.habitdiary.data.repository.LocalLlmRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class JourneyViewModel @Inject constructor(
     private val diaryRepository: DiaryRepository,
-    private val habitRepository: HabitRepository
+    private val habitRepository: HabitRepository,
+    private val localLlmRepository: LocalLlmRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(JourneyState())
     val state = _state.asStateFlow()
@@ -41,7 +46,12 @@ class JourneyViewModel @Inject constructor(
         getFlashbackMedia()
         observeDiaryStats()
         observeHabitStats()
+        generateAiResponse()
 
+    }
+
+    private fun generateAiResponse() = viewModelScope.launch {
+        
     }
 
     private fun getFlashbackMedia() = viewModelScope.launch {

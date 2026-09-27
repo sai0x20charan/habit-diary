@@ -17,5 +17,12 @@ data class SettingsState(
     val dailyLogReminderTime: LocalTime = LocalTime(20, 0),
     val formatedReminderTime : String = "20:00",
     val showDailyLogTimeDialog: Boolean = false,
-    val showPermissionRationale: Boolean = false
+    val showPermissionRationale: Boolean = false,
+    val aiModelState : AiModelState = AiModelState()
+)
+
+data class AiModelState(
+    val isDownloading : Boolean = false,
+    val isDownloaded : Boolean = false,
+    val downloadProgress : Float = 0f
 )

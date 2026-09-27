@@ -25,6 +25,9 @@ import kotlinx.coroutines.launch
 import com.charan.habitdiary.core.notification.NotificationScheduler
 import com.charan.habitdiary.core.utils.DateUtil.toFormattedString
 import com.charan.habitdiary.core.utils.PermissionManager
+import com.charan.habitdiary.data.model.ProcessState
+import com.charan.habitdiary.data.repository.LocalLlmRepository
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.LocalTime
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -34,7 +37,8 @@ class SettingsViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
     private val biometricManager : BiometricManager,
     private val notificationScheduler: NotificationScheduler,
-    private val permissionManager: PermissionManager
+    private val permissionManager: PermissionManager,
+    private val localLlmRepository: LocalLlmRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
@@ -125,6 +129,44 @@ class SettingsViewModel @Inject constructor(
             }
             SettingsEvent.OpenPermissionSettings -> {
                 permissionManager.openSettingsPermissionScreen()
+            }
+
+            SettingsEvent.DeleteAiModel -> {}
+            SettingsEvent.DownloadAiModel -> {
+                downloadAiModel()
+            }
+        }
+    }
+
+    private fun downloadAiModel() = viewModelScope.launch {
+        localLlmRepository.downloadModel().collectLatest { state->
+            when(state){
+                is ProcessState.Error -> {
+                    sendEffect(SettingsEffect.ShowToast(ToastMessage.Text(state.exception)))
+                }
+                is ProcessState.Loading -> {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            aiModelState = currentState.aiModelState.copy(
+                                isDownloading = true,
+                                downloadProgress = state.progress
+                            )
+                        )
+                    }
+                }
+                ProcessState.NotDetermined -> {
+
+                }
+                is ProcessState.Success<*> -> {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            aiModelState = currentState.aiModelState.copy(
+                                isDownloading = false,
+                                downloadProgress = 0f
+                            )
+                        )
+                    }
+                }
             }
         }
     }

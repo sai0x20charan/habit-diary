@@ -6,7 +6,8 @@ data class JourneyState(
     val flashbackMedia : List<FlashbackMedia> = emptyList(),
     val carouselMediaPaths : List<String> = emptyList(),
     val diaryStats : DiaryStats = DiaryStats(),
-    val habitsStats: HabitsStats = HabitsStats()
+    val habitsStats: HabitsStats = HabitsStats(),
+    val aiResponseState : AiResponseState = AiResponseState()
 )
 
 data class FlashbackMedia(
@@ -26,4 +27,9 @@ data class HabitsStats(
     val totalCompletions: Int = 0,
     val currentStreak: Int = 0,
     val bestStreak: Int = 0
+)
+
+data class AiResponseState(
+    val text : String = "",
+    val generatingText : String = "",
 )

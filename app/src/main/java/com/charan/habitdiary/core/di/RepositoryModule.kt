@@ -5,11 +5,13 @@ import com.charan.habitdiary.data.repository.DataStoreRepository
 import com.charan.habitdiary.data.repository.DiaryRepository
 import com.charan.habitdiary.data.repository.FileRepository
 import com.charan.habitdiary.data.repository.HabitRepository
+import com.charan.habitdiary.data.repository.LocalLlmRepository
 import com.charan.habitdiary.data.repository.impl.BackupRepositoryImpl
 import com.charan.habitdiary.data.repository.impl.DataStoreRepositoryImpl
 import com.charan.habitdiary.data.repository.impl.DiaryRepositoryImpl
 import com.charan.habitdiary.data.repository.impl.FileRepositoryImpl
 import com.charan.habitdiary.data.repository.impl.HabitRepositoryImpl
+import com.charan.habitdiary.data.repository.impl.LocalLlmRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -49,4 +51,10 @@ abstract class RepositoryModule {
     abstract fun bindBackupRepository(
         impl: BackupRepositoryImpl
     ): BackupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocalLlmRepository(
+        impl : LocalLlmRepositoryImpl
+    ) : LocalLlmRepository
 }

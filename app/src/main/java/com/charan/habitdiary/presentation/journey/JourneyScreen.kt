@@ -148,6 +148,29 @@ fun JourneyScreen(
 
             item {
                 SectionHeader(
+                    title = "AI Insights",
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = state.aiResponseState.text.ifEmpty { state.aiResponseState.generatingText },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        textAlign = TextAlign.Start
+                    )
+                }
+            }
+
+            item {
+                SectionHeader(
                     title = stringResource(R.string.diary_stats),
                 )
             }

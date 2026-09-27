@@ -24,3 +24,7 @@
 -keep class androidx.work.** { *; }
 -keep class * extends androidx.work.InputMerger { *; }
 -keep class androidx.work.OverwritingInputMerger { *; }
+
+# RunAnywhere SDK (required for release minify)
+-keep class com.runanywhere.sdk.** { *; }
+-keepclassmembers class com.runanywhere.sdk.** { *; }

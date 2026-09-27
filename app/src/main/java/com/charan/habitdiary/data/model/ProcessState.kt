@@ -8,5 +8,7 @@ sealed class ProcessState<out T> {
         val total : Long = 0L,
         val current : Long = 0L
     ) : ProcessState<Nothing>()
+
+
     object NotDetermined : ProcessState<Nothing>()
 }

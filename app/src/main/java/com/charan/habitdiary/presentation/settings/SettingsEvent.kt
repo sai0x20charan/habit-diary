@@ -39,4 +39,8 @@ sealed class SettingsEvent {
     data class OnToggleDailyLogTimeDialog(val show: Boolean) : SettingsEvent()
     data class TogglePermissionRationale(val show: Boolean) : SettingsEvent()
     data object OpenPermissionSettings : SettingsEvent()
+
+    data object DownloadAiModel : SettingsEvent()
+
+    data object DeleteAiModel : SettingsEvent()
 }

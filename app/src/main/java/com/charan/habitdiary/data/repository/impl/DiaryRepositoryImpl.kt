@@ -156,4 +156,16 @@ class DiaryRepositoryImpl @Inject constructor(
             dailyLogDao.getAllLogsWithHabit()
         }
     }
+
+    override suspend fun getAllLogsWithHabitForDateRange(
+        start: LocalDate,
+        end: LocalDate
+    ): Result<List<DailyLogWithHabit>> {
+        return suspendRunCatching {
+            dailyLogDao.getAllLogsWithHabitForDateRange(
+                start.getStartOfDay(),
+                end.getEndOfDay()
+            )
+        }
+    }
 }

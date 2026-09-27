@@ -4,29 +4,34 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
-
 import androidx.navigation3.runtime.NavKey
-import com.charan.habitdiary.presentation.root.navigation.Destinations
+import com.charan.habitdiary.data.ai.LocalAiDataSource
 import com.charan.habitdiary.presentation.root.AppRoot
+import com.charan.habitdiary.presentation.root.navigation.Destinations
+import com.runanywhere.sdk.public.RunAnywhere
+import com.runanywhere.sdk.public.api.models
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
+    @Inject lateinit var localAiDataSource: LocalAiDataSource
     private val keepScreen = mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         var deepLinkStack = intent?.data?.let {
             DeepLinkHandler.resolve(it)
         }
+
         intent.getSharedMedia().apply {
             if (this.isNotEmpty()) {
                 deepLinkStack = listOf(
@@ -39,7 +44,6 @@ class MainActivity : FragmentActivity() {
                         mediaList = this.map { it }
                     )
                 )
-
             }
         }
 
@@ -50,32 +54,27 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
-
         )
         WindowInsetsControllerCompat(window, window.decorView)
         setContent {
             LaunchedEffect(Unit) {
                 keepScreen.value = false
+                localAiDataSource.initialize()
+                Log.d("MainActivity", "Available models: ${RunAnywhere.models.list()}")
             }
 
             AppRoot(
                 deepLinkStack = deepLinkStack,
-
             )
         }
     }
-
-
 }
-
 
 fun Intent.getSharedMedia(): List<String> {
     val result = mutableListOf<String>()
 
     when (action) {
-
         Intent.ACTION_SEND -> {
-
             clipData?.let { clip ->
                 for (i in 0 until clip.itemCount) {
                     clip.getItemAt(i).uri?.let {

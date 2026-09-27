@@ -188,6 +188,13 @@ object DateUtil {
         return Pair(startDate, endDate)
     }
 
+    fun LocalDate.getOneWeekBackRange() : Pair<LocalDate, LocalDate> {
+        val targetDate = this.minusDays(7)
+        val startDate = targetDate.minusDays(3)
+        val endDate = targetDate.plusDays(3)
+        return Pair(startDate, endDate)
+    }
+
     fun LocalDate.getSixMonthsBackRange() : Pair<LocalDate, LocalDate> {
         val targetDate = this.minusMonths(6)
         val startDate = targetDate.minusDays(14)

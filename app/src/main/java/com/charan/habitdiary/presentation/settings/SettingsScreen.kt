@@ -54,6 +54,7 @@ import com.charan.habitdiary.presentation.settings.components.SettingsSwitchItem
 import com.charan.habitdiary.presentation.settings.components.ThemeOptionButtonGroup
 import android.Manifest
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.font.FontWeight
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -313,13 +314,42 @@ fun SettingsScreen(
 
                 SettingsSwitchItem(
                     title = stringResource(R.string.hour_format_24),
-                    index = IndexItem.LAST,
+                    index = IndexItem.MIDDLE,
                     isChecked = state.is24HourFormat,
                     onCheckedChange = {
                         viewModel.onEvent(SettingsEvent.OnTimeFormatChange(it))
                     },
                     leadingIcon = Icons.Rounded.AccessTime
                 )
+
+                CustomListItem(
+                    indexItem = IndexItem.LAST,
+                    headLineContent = {
+                        Text("AI Model Download")
+                    },
+                    leadingContent = {
+                        if(state.aiModelState.isDownloading){
+                            CircularProgressIndicator(
+                                progress = {state.aiModelState.downloadProgress}
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.WorkspacePremium,
+                                contentDescription = "AI Model Download"
+                            )
+                        }
+                    },
+                    onClick = {
+                        if(state.aiModelState.isDownloaded){
+                            viewModel.onEvent(SettingsEvent.DeleteAiModel)
+                        } else {
+                            viewModel.onEvent(SettingsEvent.DownloadAiModel)
+                        }
+                    }
+
+                )
+
+
             }
 
             item {
