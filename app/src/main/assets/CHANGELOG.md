@@ -1,4 +1,2 @@
-## New Features
-- Introduced a new You page replacing the Journey tab.
-
-
+## Bug Fixes
+- Fixed habit card elevation styling.
